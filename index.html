@@ -175,6 +175,8 @@
       user-select: none;
       -webkit-user-select: none;
       transition: background 0.15s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .np-header:active { background: var(--navy3); }
 
@@ -269,6 +271,8 @@
       cursor: pointer;
       font-family: 'Inter', sans-serif;
       transition: all 0.15s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .topics-action-btn:hover { border-color: var(--teal); color: var(--teal); }
 
@@ -294,6 +298,8 @@
       cursor: pointer;
       transition: background 0.1s;
       border-radius: 6px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .topic-item:last-child { border-bottom: none; }
     .topic-item:active { background: var(--navy3); }
@@ -1479,6 +1485,16 @@ const COMP_EXAM_SUBJECTS = [
   { id: 'np5', name: 'NP5 (100 items)', color: 4, scores: [63,55,80,64,80,70,82,81,79,80,78,80] },
 ];
 
+// ══════════════════════════════════════════════
+//  STORAGE KEYS — progress, scores, and comp exams
+// ══════════════════════════════════════════════
+const STORAGE_KEY = 'nle_progress_v2';          // <-- FIX: missing constant added here
+const SCORE_STORAGE_KEY = 'nle2026_scores';
+const COMP_STORAGE_KEY = 'nle2026_comp_exams';
+
+// ══════════════════════════════════════════════
+//  PROGRESS LOAD / SAVE
+// ══════════════════════════════════════════════
 
 function loadProgress() {
   try {
@@ -1493,9 +1509,6 @@ function saveProgress(data) {
 let progress = loadProgress();
 
 // Score Tracker storage (separate key — independent of topic progress)
-const SCORE_STORAGE_KEY = 'nle2026_scores';
-const COMP_STORAGE_KEY = 'nle2026_comp_exams';
-
 function loadScores() {
   try { return JSON.parse(localStorage.getItem(SCORE_STORAGE_KEY) || '{}'); }
   catch { return {}; }
@@ -1607,11 +1620,11 @@ function renderNPCards() {
       </div>
       <div class="topics-panel" id="panel-${np.id}">
         <div class="topics-search">
-          <input type="search" placeholder="Search topics…" oninput="filterTopics('${np.id}', this.value)" />
+          <input type="search" placeholder="Search topics…" onclick="event.stopPropagation()" oninput="filterTopics('${np.id}', this.value)" />
         </div>
         <div class="topics-actions">
-          <button class="topics-action-btn" onclick="checkAll('${np.id}')">✓ Check All</button>
-          <button class="topics-action-btn" onclick="uncheckAll('${np.id}')">✕ Uncheck All</button>
+          <button class="topics-action-btn" onclick="event.stopPropagation();checkAll('${np.id}')">✓ Check All</button>
+          <button class="topics-action-btn" onclick="event.stopPropagation();uncheckAll('${np.id}')">✕ Uncheck All</button>
         </div>
         <div class="topics-list" id="topics-${np.id}">
           ${renderTopicsHTML(np)}
@@ -1630,7 +1643,7 @@ function renderTopicsHTML(np) {
       const done = isDone(np.id, gi, ti);
       html += `
         <div class="topic-item ${done ? 'done' : ''}" id="topic-${np.id}-${gi}-${ti}"
-          onclick="handleTopicClick('${np.id}', ${gi}, ${ti})">
+          onclick="handleTopicClick(event, '${np.id}', ${gi}, ${ti})">
           <div class="topic-check">
             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
               <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1645,10 +1658,11 @@ function renderTopicsHTML(np) {
   return html;
 }
 
-function handleTopicClick(npId, gi, ti) {
+function handleTopicClick(event, npId, gi, ti) {
+  if (event) event.stopPropagation();
   toggleTopic(npId, gi, ti);
   const item = document.getElementById(`topic-${npId}-${gi}-${ti}`);
-  item.classList.toggle('done', isDone(npId, gi, ti));
+  if (item) item.classList.toggle('done', isDone(npId, gi, ti));
   updateNPCard(npId);
   updateOverall();
   if (document.getElementById('view-stats').classList.contains('active')) updateStats();
@@ -1885,7 +1899,7 @@ function updateNPCard(npId) {
   const bar = document.getElementById(`bar-${npId}`);
   const desc = document.querySelector(`#card-${npId} .np-desc`);
 
-  if (ring) ring.setAttribute('stroke-dashoffset', total ? miniOff : miniC);
+  if (ring) ring.setAttribute('stroke-dashoffset', (total && done !== undefined) ? miniOff : miniC);
   if (pctEl) pctEl.textContent = pct + '%';
   if (bar) bar.style.width = pct + '%';
   if (desc) desc.textContent = `${done} / ${total} topics reviewed`;
