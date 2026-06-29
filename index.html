@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>MAKINANO,RN 2026</title>
+  <title>MAKINANO, RN 2026</title>
 
   <!-- PWA Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -73,6 +73,11 @@
       color: var(--muted);
       margin-top: 1px;
     }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .reset-btn {
       background: none;
       border: 1px solid var(--border);
@@ -85,6 +90,27 @@
       transition: all 0.2s;
     }
     .reset-btn:hover { border-color: var(--rose); color: var(--rose); }
+
+    /* ── REFRESH BUTTON ── */
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 1.1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      padding: 0;
+      line-height: 1;
+    }
+    .refresh-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .refresh-btn:active { transform: rotate(45deg); }
 
     /* ── OVERALL RING HERO ── */
     .hero {
@@ -724,9 +750,12 @@
 <div class="topbar">
   <div>
     <div class="topbar-title">MAKINANO, RN <span>2026</span></div>
-    <div class="topbar-sub">made by her love: Gab</div>
+    <div class="topbar-sub">made by her love: Gab2</div>
   </div>
-  <button class="reset-btn" onclick="confirmReset()">Reset All</button>
+  <div class="topbar-right">
+    <button class="refresh-btn" onclick="refreshApp()" title="Check for updates" aria-label="Refresh">↻</button>
+    <button class="reset-btn" onclick="confirmReset()">Reset All</button>
+  </div>
 </div>
 
 <!-- Update banner: shown when a new version is ready -->
@@ -2052,6 +2081,24 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── REFRESH BUTTON HANDLER ──
+function refreshApp() {
+  showToast('Checking for updates…');
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.update().then(() => {
+        window.location.reload();
+      }).catch(() => {
+        window.location.reload();
+      });
+    }).catch(() => {
+      window.location.reload();
+    });
+  } else {
+    window.location.reload();
+  }
 }
 
 // ══════════════════════════
