@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NLE 2026 Reviewer Tracker</title>
+
+  <!-- PWA Meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NLE Tracker" />
+  <meta name="theme-color" content="#0d1b2a" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0d1b2a;
+      --navy2:  #132238;
+      --navy3:  #1c3150;
+      --teal:   #00c9a7;
+      --teal2:  #00a88b;
+      --sky:    #38bdf8;
+      --amber:  #f59e0b;
+      --rose:   #fb7185;
+      --white:  #f0f6ff;
+      --muted:  #8ba3bc;
+      --card:   #111e2f;
+      --border: #1e3249;
+      --radius: 16px;
+    }
+
+    html { font-size: 16px; }
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,27,42,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+    .topbar-title span { color: var(--teal); }
+    .topbar-sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .reset-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.72rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .reset-btn:hover { border-color: var(--rose); color: var(--rose); }
+
+    /* ── OVERALL RING HERO ── */
+    .hero {
+      padding: 28px 20px 20px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .ring-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .ring-svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: var(--navy3); stroke-width: 8; }
+    .ring-fg {
+      fill: none;
+      stroke: var(--teal);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1);
+    }
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ring-pct {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--teal);
+      line-height: 1;
+    }
+    .ring-label { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+    .hero-text h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .hero-text p { font-size: 0.8rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+    .hero-counts {
+      margin-top: 10px;
+      display: flex;
+      gap: 16px;
+    }
+    .hero-count-item { text-align: center; }
+    .hero-count-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+    .hero-count-lbl { font-size: 0.65rem; color: var(--muted); }
+
+    /* ── NP CARDS ── */
+    .section-label {
+      padding: 4px 20px 10px;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .np-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .np-card {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .np-card:last-child { border-bottom: 1px solid var(--border); }
+
+    .np-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      cursor: pointer;
+      gap: 14px;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background 0.15s;
+    }
+    .np-header:active { background: var(--navy3); }
+
+    .np-mini-ring { position: relative; flex-shrink: 0; }
+    .mini-svg { transform: rotate(-90deg); }
+    .mini-bg { fill: none; stroke: var(--navy3); stroke-width: 5; }
+    .mini-fg {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1);
+    }
+    .mini-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.58rem;
+      font-weight: 700;
+    }
+
+    .np-info { flex: 1; min-width: 0; }
+    .np-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .np-desc { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .np-progress-bar-wrap {
+      margin-top: 7px;
+      height: 4px;
+      background: var(--navy3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .np-progress-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.4s cubic-bezier(.4,0,.2,1);
+    }
+
+    .np-chevron {
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: transform 0.25s;
+      font-size: 0.8rem;
+    }
+    .np-card.open .np-chevron { transform: rotate(180deg); }
+
+    /* ── TOPICS LIST ── */
+    .topics-panel {
+      display: none;
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+    }
+    .np-card.open .topics-panel { display: block; }
+
+    .topics-search {
+      padding: 10px 16px 6px;
+    }
+    .topics-search input {
+      width: 100%;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-family: 'Inter', sans-serif;
+      padding: 8px 12px;
+      border-radius: 8px;
+      outline: none;
+    }
+    .topics-search input::placeholder { color: var(--muted); }
+    .topics-search input:focus { border-color: var(--teal); }
+
+    .topics-actions {
+      padding: 6px 16px 8px;
+      display: flex;
+      gap: 8px;
+    }
+    .topics-action-btn {
+      font-size: 0.68rem;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .topics-action-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+    .topics-list {
+      padding: 0 12px 12px;
+    }
+
+    .topic-group-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      padding: 10px 4px 4px;
+      font-weight: 500;
+    }
+
+    .topic-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 4px;
+      border-bottom: 1px solid rgba(30,50,73,0.5);
+      cursor: pointer;
+      transition: background 0.1s;
+      border-radius: 6px;
+    }
+    .topic-item:last-child { border-bottom: none; }
+    .topic-item:active { background: var(--navy3); }
+
+    .topic-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      background: transparent;
+    }
+    .topic-item.done .topic-check {
+      background: var(--teal);
+      border-color: var(--teal);
+    }
+    .topic-check svg { opacity: 0; transition: opacity 0.15s; }
+    .topic-item.done .topic-check svg { opacity: 1; }
+
+    .topic-text {
+      flex: 1;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      color: var(--white);
+      transition: color 0.15s;
+    }
+    .topic-item.done .topic-text {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: var(--muted);
+    }
+
+    .topic-pts {
+      font-size: 0.62rem;
+      color: var(--amber);
+      flex-shrink: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* hidden by search */
+    .topic-item.hidden { display: none; }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      background: rgba(13,27,42,0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 4px 8px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 0.6rem;
+      font-family: 'Inter', sans-serif;
+      transition: color 0.15s;
+      gap: 3px;
+    }
+    .nav-btn.active { color: var(--teal); }
+    .nav-icon { font-size: 1.2rem; }
+
+    /* ── VIEWS ── */
+    .view { display: none; padding-bottom: 80px; }
+    .view.active { display: block; }
+
+    /* ── STATS VIEW ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 16px 16px 0;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .stat-card-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 4px;
+      color: var(--teal);
+    }
+    .stat-card-sub { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+
+    .np-stats-section { padding: 16px; }
+    .np-stat-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .np-stat-row:last-child { border-bottom: none; }
+    .np-stat-name {
+      font-size: 0.75rem;
+      font-weight: 500;
+      width: 80px;
+      flex-shrink: 0;
+      color: var(--white);
+    }
+    .np-stat-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--navy3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .np-stat-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s;
+    }
+    .np-stat-pct {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .np-stat-count { font-size: 0.65rem; color: var(--muted); width: 44px; text-align: right; flex-shrink: 0; }
+
+    /* ── SCORE TRACKER ── */
+    .score-scroll {
+      overflow-x: auto;
+      padding: 4px 16px 18px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .score-scroll-inner { min-width: 640px; }
+
+    .score-group { margin-bottom: 18px; }
+    .score-col-headers, .score-phase-headers, .score-row {
+      display: grid;
+      grid-template-columns: 130px repeat(4, 1fr) 64px;
+      gap: 6px;
+      align-items: center;
+    }
+    .score-col-headers {
+      font-size: 0.58rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      padding-top: 4px;
+    }
+    .score-phase-headers {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--sky);
+      letter-spacing: 0.03em;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .score-col-headers .score-cell-group,
+    .score-phase-headers .score-cell-group { text-align: center; }
+    .score-col-headers .score-cell-ave,
+    .score-phase-headers .score-cell-ave { text-align: center; }
+
+    .score-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 4px;
+    }
+    .score-name-sub { font-weight: 400; color: var(--muted); padding-left: 10px; font-size: 0.74rem; }
+
+    .score-row-group {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 4px 0;
+      font-weight: 600;
+    }
+    .score-row-sub { padding: 2px 0; border-bottom: 1px solid rgba(30,50,73,0.4); }
+
+    .score-cell, .score-cell-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+    }
+    .score-cell-items { font-size: 0.6rem; color: var(--muted); }
+    .score-cell-num { font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 700; }
+    .score-cell-pct { font-size: 0.68rem; font-weight: 600; }
+
+    .score-input {
+      width: 56px;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 6px;
+      padding: 4px 2px;
+      outline: none;
+    }
+    .score-input:focus { border-color: var(--teal); }
+    .score-input::-webkit-outer-spin-button,
+    .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .score-cell-ave {
+      text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    /* ── COMPREHENSIVE EXAMS TABLE ── */
+    .comp-row {
+      display: grid;
+      grid-template-columns: 130px repeat(12, 48px) 64px;
+      gap: 5px;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(30,50,73,0.4);
+    }
+    .comp-row-header {
+      font-size: 0.6rem;
+      color: var(--muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+    .comp-cell { text-align: center; }
+    .comp-head { font-size: 0.6rem; }
+    .comp-subj {
+      text-align: left;
+      font-size: 0.74rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .comp-input {
+      width: 40px;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 0.72rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 6px;
+      padding: 4px 2px;
+      outline: none;
+    }
+    .comp-input:focus { border-color: var(--teal); }
+    .comp-input::-webkit-outer-spin-button,
+    .comp-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .comp-ave {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+
+    /* Colors per NP */
+    .c0 { color: #00c9a7; } .b0 { background: #00c9a7; } .s0 { stroke: #00c9a7; }
+    .c1 { color: #38bdf8; } .b1 { background: #38bdf8; } .s1 { stroke: #38bdf8; }
+    .c2 { color: #a78bfa; } .b2 { background: #a78bfa; } .s2 { stroke: #a78bfa; }
+    .c3 { color: #f59e0b; } .b3 { background: #f59e0b; } .s3 { stroke: #f59e0b; }
+    .c4 { color: #fb7185; } .b4 { background: #fb7185; } .s4 { stroke: #fb7185; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      align-items: flex-end;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius) var(--radius) 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      width: 100%;
+      padding: 24px 20px 40px;
+    }
+    .modal h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .modal p { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+    .modal-btns { display: flex; gap: 10px; }
+    .btn-cancel, .btn-confirm {
+      flex: 1;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-cancel { background: var(--navy3); color: var(--muted); }
+    .btn-confirm { background: var(--rose); color: #fff; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 0.78rem;
+      padding: 10px 18px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 300;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── INSTALL BANNER ── */
+    .install-banner {
+      margin: 12px 16px 0;
+      background: linear-gradient(135deg, var(--navy3), #0d2744);
+      border: 1px solid var(--teal);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .install-banner-text { flex: 1; }
+    .install-banner-text strong { font-size: 0.82rem; display: block; margin-bottom: 2px; }
+    .install-banner-text span { font-size: 0.7rem; color: var(--muted); }
+    .install-banner-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .install-banner-btn {
+      background: var(--teal);
+      color: #0d1b2a;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      padding: 7px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── UPDATE BANNER ── */
+    .update-banner {
+      display: none;
+      position: fixed;
+      top: 64px;
+      left: 16px; right: 16px;
+      z-index: 150;
+      background: linear-gradient(135deg, #3a2a0d, #1c3150);
+      border: 1px solid var(--amber);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+    .update-banner-text { flex: 1; font-size: 0.76rem; line-height: 1.4; }
+    .update-banner-text strong { display: block; font-size: 0.8rem; margin-bottom: 1px; }
+    .update-banner-text span { color: var(--muted); }
+    .update-banner-btn {
+      background: var(--amber);
+      color: #0d1b2a;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      padding: 7px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 600px) {
+      .np-grid, .stats-grid { max-width: 680px; margin: 0 auto; }
+      .hero { max-width: 680px; margin: 0 auto; }
+      .section-label { max-width: 680px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">NLE <span>2026</span> Tracker</div>
+    <div class="topbar-sub">Philippine Nursing Licensure Exam</div>
+  </div>
+  <button class="reset-btn" onclick="confirmReset()">Reset All</button>
+</div>
+
+<!-- Update banner: shown when a new version is ready -->
+<div class="update-banner" id="update-banner">
+  <div class="update-banner-text">
+    <strong>🔄 Update available</strong>
+    <span>Your saved progress is kept. Tap to refresh.</span>
+  </div>
+  <button class="update-banner-btn" id="update-banner-btn">Update</button>
+</div>
+
+<!-- VIEW: HOME -->
+<div class="view active" id="view-home">
+
+  <!-- Install banner (shown on mobile if not installed) -->
+  <div class="install-banner" id="install-banner" style="display:none;">
+    <div class="install-banner-text">
+      <strong id="install-banner-title">📱 Install on your device</strong>
+      <span id="install-banner-msg">Tap Share → Add to Home Screen</span>
+    </div>
+    <button class="install-banner-btn" id="install-banner-btn" style="display:none;" onclick="triggerInstall()">Install</button>
+    <button class="install-banner-close" onclick="dismissInstallBanner()">✕</button>
+  </div>
+
+  <!-- Overall Ring -->
+  <div class="hero">
+    <div class="ring-wrap">
+      <svg class="ring-svg" width="100" height="100" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="42"/>
+        <circle class="ring-fg" cx="50" cy="50" r="42"
+          id="overall-ring"
+          stroke-dasharray="263.9"
+          stroke-dashoffset="263.9"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-pct" id="overall-pct">0%</div>
+        <div class="ring-label">overall</div>
+      </div>
+    </div>
+    <div class="hero-text">
+      <h2>Your NLE Review Progress</h2>
+      <p>Track every topic across all 5 Nursing Practice exams based on the official 2026 TOS.</p>
+      <div class="hero-counts">
+        <div class="hero-count-item">
+          <div class="hero-count-num" id="overall-done">0</div>
+          <div class="hero-count-lbl">Done</div>
+        </div>
+        <div class="hero-count-item">
+          <div class="hero-count-num" id="overall-left">0</div>
+          <div class="hero-count-lbl">Left</div>
+        </div>
+        <div class="hero-count-item">
+          <div class="hero-count-num" id="overall-total">0</div>
+          <div class="hero-count-lbl">Total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Nursing Practice Subjects</div>
+
+  <!-- NP Cards -->
+  <div class="np-grid" id="np-grid"></div>
+</div>
+
+<!-- VIEW: STATS -->
+<div class="view" id="view-stats">
+  <div style="padding: 20px 16px 8px;">
+    <div style="font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700;">Progress Statistics</div>
+    <div style="font-size:0.75rem; color:var(--muted); margin-top:3px;">Your review overview</div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-label">Topics Done</div>
+      <div class="stat-card-val" id="stat-done">0</div>
+      <div class="stat-card-sub">of <span id="stat-total">0</span> total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Completion</div>
+      <div class="stat-card-val" id="stat-pct">0%</div>
+      <div class="stat-card-sub">overall progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Best Subject</div>
+      <div class="stat-card-val" style="font-size:1rem; padding-top:6px;" id="stat-best">—</div>
+      <div class="stat-card-sub" id="stat-best-pct"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Needs Work</div>
+      <div class="stat-card-val" style="font-size:1rem; padding-top:6px;" id="stat-worst">—</div>
+      <div class="stat-card-sub" id="stat-worst-pct"></div>
+    </div>
+  </div>
+
+  <div class="np-stats-section">
+    <div class="section-label" style="padding:0 0 10px;">Per Subject Breakdown</div>
+    <div id="np-stat-rows"></div>
+  </div>
+</div>
+
+<!-- VIEW: SCORE TRACKER -->
+<div class="view" id="view-scores">
+  <div style="padding: 20px 16px 4px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+    <div>
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700;">PNLE Score Tracker</div>
+      <div style="font-size:0.75rem; color:var(--muted); margin-top:3px;">Diagnostic, pre-test, post-test &amp; active recall scores</div>
+    </div>
+    <button class="reset-btn" onclick="confirmResetScores()" style="flex-shrink:0;">Reset</button>
+  </div>
+
+  <div class="score-scroll">
+    <div class="score-scroll-inner" id="score-groups"></div>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">Comprehensive Exams</div>
+  <div style="padding: 0 16px 10px; font-size:0.72rem; color:var(--muted); line-height:1.5;">
+    💡 Study Tip: Take weekly and monthly comprehensive exams. Use resources from the test banks.
+  </div>
+  <div class="score-scroll">
+    <div class="score-scroll-inner" id="comp-exam-table"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-home" onclick="switchView('home')">
+    <span class="nav-icon">📋</span>
+    <span>Topics</span>
+  </button>
+  <button class="nav-btn" id="nav-stats" onclick="switchView('stats')">
+    <span class="nav-icon">📊</span>
+    <span>Stats</span>
+  </button>
+  <button class="nav-btn" id="nav-scores" onclick="switchView('scores')">
+    <span class="nav-icon">📝</span>
+    <span>Scores</span>
+  </button>
+</div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <h3>Reset all progress?</h3>
+    <p>This will uncheck all topics across all 5 Nursing Practice subjects. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="doReset()">Reset Everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Scores Modal -->
+<div class="modal-overlay" id="reset-scores-modal">
+  <div class="modal">
+    <h3>Reset score tracker?</h3>
+    <p>This clears all entered Diagnostic/Pre-test/Post-test/Active Recall scores and restores the Comprehensive Exam table to its original starting values. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeScoresModal()">Cancel</button>
+      <button class="btn-confirm" onclick="doResetScores()">Reset Scores</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA — Topics from official 2026 TOS / PRBON
+// ══════════════════════════════════════════════
+const NP_DATA = [
+  {
+    id: 'np1',
+    name: 'NP I',
+    desc: 'Community Health Nursing',
+    color: 0,
+    groups: [
+      {
+        name: 'Care of Individuals (Part A – 80%)',
+        topics: [
+          { text: 'Care of Clients with Non-Communicable Diseases', pts: 10 },
+          { text: 'Care of Clients with Communicable Diseases', pts: 10 },
+        ]
+      },
+      {
+        name: 'Care of Families (Part A – 80%)',
+        topics: [
+          { text: 'Care of Normal Families', pts: 10 },
+          { text: 'Care of Families at Risk', pts: 10 },
+        ]
+      },
+      {
+        name: 'Care of Population Groups (Part A – 80%)',
+        topics: [
+          { text: 'Care of Population Groups with Other Health Priorities', pts: 20 },
+        ]
+      },
+      {
+        name: 'Care of the Community (Part A – 80%)',
+        topics: [
+          { text: 'Philippine Healthcare Delivery System & DOH', pts: null },
+          { text: 'Universal Health Care (RA 11223) & SDGs', pts: null },
+          { text: 'Primary Health Care (PHC)', pts: null },
+          { text: 'Community Assessment, Diagnosis, Planning, Intervention & Evaluation', pts: null },
+          { text: 'Epidemiology, Vital Statistics & Demography', pts: null },
+          { text: 'Care of Community during Disaster', pts: null },
+          { text: 'School Nursing & Occupational Health and Safety Nursing', pts: null },
+          { text: 'COPAR (Community Organizing Participatory Action Research)', pts: null },
+          { text: 'Recording, Reporting & Information Technology in Community Setting', pts: null },
+          { text: 'Referral System', pts: null },
+        ]
+      },
+      {
+        name: 'Health Education & Research (Part B – 20%)',
+        topics: [
+          { text: 'Health Education in care of individuals, families, population groups & community', pts: 10 },
+          { text: 'Utilization of Research in community nursing care', pts: 10 },
+        ]
+      },
+      {
+        name: 'Key CHN Sub-topics',
+        topics: [
+          { text: 'Definitions of Public Health & Principles of PHC', pts: null },
+          { text: 'Legal Basis of PHC – LOI 949, PD 996', pts: null },
+          { text: 'Pillars & Levels of PHC Workers', pts: null },
+          { text: 'Health Sector Reform Agenda & FOURmula One for Health', pts: null },
+          { text: 'Devolution / LGU Code (RA 7160)', pts: null },
+          { text: 'Millennium Development Goals (MDGs)', pts: null },
+          { text: 'Family Health – Types of Family, Health Deficit/Threat/Crisis', pts: null },
+          { text: 'Maternal Health Care Program – Prenatal Visits, TT Immunization', pts: null },
+          { text: 'Child Health Program: EPI, IMCI, Newborn Screening (RA 9288)', pts: null },
+          { text: 'Nutrition Program – Kwashiorkor vs Marasmus, Vitamin A', pts: null },
+          { text: 'Non-Communicable Diseases in CHN (HTN, Stroke, Cancer, DM)', pts: null },
+          { text: 'Environmental Health & Sanitation (waste, water, toilet facilities)', pts: null },
+          { text: 'Vital Statistics (CBR, IMR, Incidence Rate, Swaroop\'s Index)', pts: null },
+          { text: 'Epidemiologic Triad & Patterns', pts: null },
+          { text: 'Bag Technique & Home Visit Principles/Steps', pts: null },
+          { text: 'Family Planning Methods (Natural, Artificial, Permanent)', pts: null },
+          { text: 'Field Health Service Information System (FHSIS)', pts: null },
+          { text: 'Halamang Gamot (LABSNiBAYUT)', pts: null },
+        ]
+      },
+    ]
+  },
+  {
+    id: 'np2',
+    name: 'NP II',
+    desc: 'Maternal, Child & Adolescent Nursing',
+    color: 1,
+    groups: [
+      {
+        name: 'Care of Mother – Prepartum (Well)',
+        topics: [
+          { text: 'Normal Pregnancy: Signs, Length, Trimesters, Hygiene', pts: null },
+          { text: 'Physiologic & Psychosocial Adaptations in Pregnancy', pts: null },
+          { text: 'Dimensions of Maternal Development', pts: null },
+          { text: 'Discomforts of Pregnancy & Relief Measures', pts: null },
+          { text: 'Prenatal Management & Comprehensive Prenatal Assessment', pts: null },
+          { text: 'Maternal & Fetal Diagnostic Testing (CVS, Amniocentesis, Ultrasound, MSAFP, NST, CST, L/S Ratio)', pts: null },
+          { text: 'Naegele\'s Rule, McDonald\'s Rule, Bartholomew\'s Rule, Haase\'s Rule', pts: null },
+          { text: 'GTPAL, Leopold\'s Maneuver', pts: null },
+          { text: 'Nutritional Requirements in Pregnancy', pts: null },
+          { text: 'Psychological Tasks of Pregnancy', pts: null },
+        ]
+      },
+      {
+        name: 'Care of Mother – Intrapartum',
+        topics: [
+          { text: 'Theories of Labor & Signs of Labor (True vs False)', pts: null },
+          { text: 'Physiologic Alterations in Labor', pts: null },
+          { text: 'Components of Labor (5Ps)', pts: null },
+          { text: 'Stages & Duration of Labor', pts: null },
+          { text: 'Partograph & VEAL CHOP', pts: null },
+          { text: 'Cardinal Movements of Fetus (EDFIREERE)', pts: null },
+          { text: 'Natural Childbirth & Psychoprophylaxis', pts: null },
+          { text: 'Essential Intrapartum Newborn Care (EINC)', pts: null },
+          { text: 'Fetal Presentation & Positioning', pts: null },
+        ]
+      },
+      {
+        name: 'Care of Mother – Postpartum',
+        topics: [
+          { text: 'Normal Puerperium & Physiological Changes (Lochia)', pts: null },
+          { text: 'Psychological Tasks Postpartum (Rubin\'s phases)', pts: null },
+          { text: 'Nursing Care in Early Puerperal Period', pts: null },
+          { text: 'Family Planning Methods (Natural, Temporary, Permanent)', pts: null },
+        ]
+      },
+      {
+        name: 'Care of Mother with Complications (At Risk)',
+        topics: [
+          { text: 'Danger Signs of Pregnancy & Teratogenic Infections (TORCH)', pts: null },
+          { text: 'Bleeding in 1st Trimester: Abortion, Ectopic Pregnancy', pts: null },
+          { text: 'Bleeding in 2nd Trimester: Hydatidiform Mole, Incompetent Cervix', pts: null },
+          { text: 'Bleeding in 3rd Trimester: Placenta Previa, Abruptio Placenta', pts: null },
+          { text: 'PIH / Pre-eclampsia & HELLP Syndrome', pts: null },
+          { text: 'Hyperemesis Gravidarum', pts: null },
+          { text: 'Gestational Diabetes Mellitus', pts: null },
+          { text: 'Iron-Deficiency & Folic Acid Deficiency Anemia', pts: null },
+          { text: 'Rh Incompatibility & DIC', pts: null },
+          { text: 'Intrapartum Complications: Uterine Rupture, Cord Prolapse, Preterm Labor, Dystocia, PROM', pts: null },
+          { text: 'Fetal Distress, IUFD, Vena Caval Syndrome, Amniotic Fluid Embolism', pts: null },
+          { text: 'Operative Obstetrics & Analgesia in Labor', pts: null },
+          { text: 'Postpartum Complications: Uterine Atony, Subinvolution, Perineal Lacerations', pts: null },
+          { text: 'Puerperal Sepsis, Mastitis, DVT, Cystitis, Uterine Prolapse, Postpartal Psychosis', pts: null },
+          { text: 'BEmONC & CEmONC', pts: null },
+        ]
+      },
+      {
+        name: 'Reproductive Health',
+        topics: [
+          { text: 'Menstrual Cycle & Phases of Sexual Physiologic Response', pts: null },
+          { text: 'Fertilization, Implantation & Fetal Development Milestones', pts: null },
+          { text: 'Fetal Circulation', pts: null },
+          { text: 'Genetic Disorders & Fertility Assessment', pts: null },
+          { text: 'Alternative to Childbirth', pts: null },
+          { text: 'Newborn Care & Assessment: APGAR, Reflexes, Skin, Fontanelles', pts: null },
+          { text: 'Caput Succedaneum vs Cephalohematoma', pts: null },
+          { text: 'Perineal Care & Postpartum Assessment', pts: null },
+        ]
+      },
+      {
+        name: 'Human Growth & Development',
+        topics: [
+          { text: 'Freud\'s Psychosexual Development Theory', pts: null },
+          { text: 'Erikson\'s Psychosocial Development Theory', pts: null },
+          { text: 'Piaget\'s Cognitive Development Theory', pts: null },
+          { text: 'Kohlberg\'s Moral Development Theory', pts: null },
+          { text: 'Bandura & Bowlby Theories', pts: null },
+          { text: 'Growth & Development by Stage: Infancy, Toddler, Preschool, School-age, Adolescence', pts: null },
+        ]
+      },
+      {
+        name: 'Care of Well Child & Adolescent',
+        topics: [
+          { text: 'Health Promotion, Disease Prevention, Safety by Age Group', pts: null },
+          { text: 'Immunization Schedule & Administration of Vaccines', pts: null },
+          { text: 'Communication & Growth Monitoring per Stage', pts: null },
+          { text: 'Adolescent STDs & HPV-associated cancers', pts: null },
+          { text: 'Anxiety & Depression in Adolescents', pts: null },
+        ]
+      },
+      {
+        name: 'Care of At-Risk / Sick Child',
+        topics: [
+          { text: 'Neonatal Conditions: Prematurity, Post-maturity, SGA, LGA, Hyperbilirubinemia, MAS, FAS, Sepsis', pts: null },
+          { text: 'Congenital Anomalies: ASD/VSD, TOF, Clubfoot, Cleft Lip/Palate, Imperforate Anus, Hirschsprung\'s, Hydrocephalus', pts: null },
+          { text: 'Toddler: Poisoning, Cerebral Palsy, Child Abuse', pts: null },
+          { text: 'Preschool: ALL (Leukemia), Hemophilia, Wilm\'s Tumor, Asthma', pts: null },
+          { text: 'School-age: DM Type 1, Rheumatic Fever, Dengue / DHF', pts: null },
+          { text: 'Pediatric Pulmonary: Acute Bronchiolitis, Pneumonia (PCAP), Tuberculosis', pts: null },
+          { text: 'Pediatric Cardiac: Cyanotic (TOF, TA, TOGV) & Acyanotic (VSD, ASD, PDA, COA) Defects', pts: null },
+          { text: 'Pediatric Hematologic: Sickle Cell Anemia, Hemophilia', pts: null },
+          { text: 'Pediatric Neurologic: Spina Bifida, Hydrocephalus, Cerebral Palsy, Reye\'s Syndrome', pts: null },
+          { text: 'Pediatric Psychosocial: Down Syndrome, Autism Spectrum Disorder, ADHD', pts: null },
+          { text: 'Pediatric GI: Esophageal Atresia, Pyloric Stenosis, Intussusception, Celiac Disease', pts: null },
+          { text: 'Pediatric Renal: Acute Glomerulonephritis, Wilm\'s Tumor', pts: null },
+          { text: 'Pediatric Endocrine: Congenital Hypothyroidism (Cretinism)', pts: null },
+          { text: 'Pediatric Vision, Hearing & Speech: Acute Otitis Media, Conjunctivitis', pts: null },
+          { text: 'Pediatric Integumentary: Scabies, Impetigo, Burns', pts: null },
+        ]
+      },
+      {
+        name: 'Ethics, Laws & Management (NP II)',
+        topics: [
+          { text: 'Ethico-moral Principles in Maternal & Child Care', pts: 5 },
+          { text: 'Leadership & Management in NP II', pts: 5 },
+          { text: 'Legal aspects, Collaboration & Teamwork (NP II)', pts: 10 },
+          { text: 'RA 7600 Rooming-In & Breastfeeding Act, Milk Code (EO 51)', pts: null },
+          { text: 'Newborn Screening Act (RA 9288) & Metabolic Diseases to Screen', pts: null },
+        ]
+      },
+    ]
+  },
+  {
+    id: 'np3',
+    name: 'NP III',
+    desc: 'Surgery, Oxygenation, F&E, Immunology',
+    color: 2,
+    groups: [
+      {
+        name: 'Perioperative Nursing (10%)',
+        topics: [
+          { text: 'Preoperative Phase: Surgical Classifications, Diagnostic Tests, Medications, Patient Teaching', pts: null },
+          { text: 'Intraoperative Phase: Surgical Setting (3 areas), Surgical Attire, Types of Anesthesia, Stages of GA', pts: null },
+          { text: 'Intraoperative: Types of Sutures, Types of Blades, Wound Classification', pts: null },
+          { text: 'Postoperative Phase: Types of Wound Healing, Dehiscence vs Evisceration', pts: null },
+        ]
+      },
+      {
+        name: 'Oxygenation – Respiratory Nursing (20%)',
+        topics: [
+          { text: 'Upper Airway Disorders', pts: null },
+          { text: 'Lower Airway: Ventilation Disorders (COPD – Bronchitis & Emphysema)', pts: null },
+          { text: 'Lower Airway: Gas-Exchange Disorders (Pneumonia, TB, Asthma, Bronchiectasis)', pts: null },
+          { text: 'Lower Airway: Perfusion Disorders (Pulmonary Embolism, Cystic Fibrosis)', pts: null },
+          { text: 'Chest Tube Drainage System & Nursing Responsibilities', pts: null },
+          { text: 'Chest Injuries: Flail Chest, Pulmonary Contusion, Pneumothorax, Pleural Effusion', pts: null },
+          { text: 'Surgical: Lobectomy vs Pneumonectomy', pts: null },
+          { text: 'Empyema, Pleurisy, Lung Cancer', pts: null },
+        ]
+      },
+      {
+        name: 'Oxygenation – Cardiovascular Nursing (20%)',
+        topics: [
+          { text: 'Congestive Heart Failure (Right-sided & Left-sided)', pts: null },
+          { text: 'Coronary Artery Disease & Angina Pectoris', pts: null },
+          { text: 'Myocardial Infarction', pts: null },
+          { text: 'Hypertension', pts: null },
+          { text: 'Aneurysm', pts: null },
+          { text: 'Dysrhythmias: Sinus Tachycardia/Bradycardia, AFib & AFlutter, PVC, VTach, VFib', pts: null },
+          { text: 'Inflammatory Diseases: Endocarditis, Myocarditis, Pericarditis', pts: null },
+          { text: 'Vascular Disorders: Arteriosclerosis Obliterans, Buerger\'s Disease, Raynaud\'s Phenomenon', pts: null },
+          { text: 'Peripheral Venous: DVT', pts: null },
+          { text: 'Hematologic: RBC Disorders (Iron-deficiency, Pernicious, Sickle Cell, Aplastic, Thalassemia, Polycythemia)', pts: null },
+          { text: 'Hematologic: Platelet & Clotting Disorders (Hemophilia, vWD, DIC, ITP, Multiple Myeloma)', pts: null },
+        ]
+      },
+      {
+        name: 'Fluids & Electrolytes / ABG (20% + 16%)',
+        topics: [
+          { text: 'Fluid Compartments & Transport Mechanisms', pts: null },
+          { text: 'Hypervolemia vs Hypovolemia (Dehydration)', pts: null },
+          { text: 'Types of IV Fluids (Isotonic, Hypotonic, Hypertonic)', pts: null },
+          { text: 'Sodium Imbalances: Hyponatremia & Hypernatremia', pts: null },
+          { text: 'Potassium Imbalances: Hypokalemia & Hyperkalemia', pts: null },
+          { text: 'Calcium Imbalances: Hypocalcemia & Hypercalcemia', pts: null },
+          { text: 'Magnesium Imbalances: Hypomagnesemia & Hypermagnesemia', pts: null },
+          { text: 'Phosphate Imbalances: Hypophosphatemia & Hyperphosphatemia', pts: null },
+          { text: 'Chloride Imbalances: Hypochloremia & Hyperchloremia', pts: null },
+          { text: 'ABG Lab Values & Normal Ranges', pts: null },
+          { text: 'ABG Compensation & Finding Clinical Manifestations', pts: null },
+          { text: 'Regulation of Acid-Base Balance', pts: null },
+          { text: 'Respiratory Acidosis & Alkalosis', pts: null },
+          { text: 'Metabolic Acidosis & Alkalosis', pts: null },
+          { text: 'Urinary Elimination Imbalances', pts: null },
+          { text: 'Renal Nursing: UTI, Urinary Incontinence, Urolithiasis/Nephrolithiasis', pts: null },
+          { text: 'Acute Kidney Injury (AKI) & Chronic Kidney Disease (CKD)', pts: null },
+          { text: 'Acute Glomerulonephritis & Nephrotic Syndrome', pts: null },
+          { text: 'BPH & Prostate Cancer', pts: null },
+          { text: 'Dialysis: Hemodialysis & Peritoneal Dialysis', pts: null },
+          { text: 'Burns: Types, Rule of 9s, Lund & Browder, Palmar Method, Phases of Management', pts: null },
+        ]
+      },
+      {
+        name: 'Infectious, Inflammatory & Immunologic (14%)',
+        topics: [
+          { text: 'Infectious Hepatitis A, B, C, E', pts: null },
+          { text: 'HIV/AIDS', pts: null },
+          { text: 'COVID-19 (Respiratory Pandemic)', pts: null },
+          { text: 'STDs: Gonorrhea, Syphilis, Chlamydia, Trichomoniasis', pts: null },
+          { text: 'Inflammatory: Guillain-Barré Syndrome (GBS)', pts: null },
+          { text: 'Inflammatory: Crohn\'s Disease vs Ulcerative Colitis', pts: null },
+          { text: 'Immunologic: Allergy & Anaphylactic Shock', pts: null },
+          { text: 'Immunologic: Systemic Lupus Erythematosus (SLE), Multiple Sclerosis', pts: null },
+          { text: 'Immunologic: Acute Glomerulonephritis & Transplant Rejection', pts: null },
+          { text: 'Scleroderma', pts: null },
+        ]
+      },
+      {
+        name: 'Cellular Aberrations / Oncology (within 14%)',
+        topics: [
+          { text: 'Pathogenesis of Cancer, Warning Signs (CAUTION US), Classification & Staging (TNM)', pts: null },
+          { text: 'Cancer Detection: Pap\'s Smear, Biopsy, Tumor Markers', pts: null },
+          { text: 'Treatment Modalities: Surgical, Chemotherapy, Radiation Therapy', pts: null },
+          { text: 'Nursing Management of Cancer Therapy', pts: null },
+          { text: 'Breast Cancer, Lung Cancer, Gastric Cancer, Colorectal Cancer', pts: null },
+          { text: 'Testicular Cancer, Hodgkin\'s Disease, Non-Hodgkin\'s Lymphoma, Leukemia', pts: null },
+          { text: 'Laryngeal Cancer, Liver Cancer, Skin Cancer, Brain Tumors', pts: null },
+          { text: 'Endometrial Cancer, Ovarian Cancer, Bladder Cancer, Renal Cancer', pts: null },
+          { text: 'Wilm\'s Tumor (Nephroblastoma), Ewing\'s Sarcoma, Pancreatic Cancer', pts: null },
+        ]
+      },
+      {
+        name: 'Health Education & Quality Improvement (Part B – 20%)',
+        topics: [
+          { text: 'Health Education: Disease Process, Diet, Medications, Exercise', pts: 10 },
+          { text: 'Quality Improvement: Medications, Staffing, Falls, Research, Policies & Procedures', pts: 10 },
+        ]
+      },
+    ]
+  },
+  {
+    id: 'np4',
+    name: 'NP IV',
+    desc: 'GI, Endocrine, Neuro, MSK & Senses',
+    color: 3,
+    groups: [
+      {
+        name: 'Gastrointestinal Nursing (25%)',
+        topics: [
+          { text: 'Malnutrition: Obesity, Kwashiorkor, Marasmus', pts: null },
+          { text: 'Oral & Esophageal Disorders: Stomatitis, GERD, Hiatal Hernia, Achalasia, Esophageal Varices, Cancer', pts: null },
+          { text: 'Upper GI: Gastritis & Peptic Ulcer Disease (PUD)', pts: null },
+          { text: 'Upper GI: Achalasia, Esophageal Atresia', pts: null },
+          { text: 'Lower GI: Appendicitis, IBS, Crohn\'s Disease vs Ulcerative Colitis', pts: null },
+          { text: 'Lower GI: Diverticulosis/Diverticulitis, Hemorrhoids', pts: null },
+          { text: 'Lower GI: Colorectal Cancer, Intestinal Obstruction, Paralytic Ileus', pts: null },
+          { text: 'Lower GI: Hirschsprung\'s Disease, Celiac Disease, Intussusception', pts: null },
+          { text: 'Constipation & Diarrhea Management', pts: null },
+          { text: 'Stoma Care & NG Tube Insertion/Feeding', pts: null },
+          { text: 'Hepatic Disorders: Liver Cirrhosis, Ascites, Esophageal Varices, Hepatic Encephalopathy', pts: null },
+          { text: 'Gallbladder Disorders: Cholecystitis & Cholelithiasis', pts: null },
+          { text: 'Pancreatic Disorders: Pancreatitis & Pancreatic Cancer', pts: null },
+        ]
+      },
+      {
+        name: 'Endocrine & Metabolism (25%)',
+        topics: [
+          { text: 'Thyroid Disorders: Hypothyroidism & Hyperthyroidism', pts: null },
+          { text: 'Parathyroid Disorders: Hypoparathyroidism & Hyperparathyroidism', pts: null },
+          { text: 'Adrenal Cortex: Addison\'s Disease, Cushing\'s Syndrome, Conn\'s Syndrome', pts: null },
+          { text: 'Adrenal Medulla: Pheochromocytoma', pts: null },
+          { text: 'Pituitary Gland: GH Problems, DI, SIADH', pts: null },
+          { text: 'Diabetes Mellitus: Types, Pathophysiology, Management', pts: null },
+          { text: 'DM Complications: DKA, HHNKS, Hypoglycemia', pts: null },
+          { text: 'Antidiabetic Agents & Oral Hypoglycemic Agents', pts: null },
+          { text: 'Hepatic: Liver Cirrhosis & Hepatitis (as metabolic disorders)', pts: null },
+          { text: 'Biliary Tract: Cholecystitis & Cholelithiasis (as metabolic disorders)', pts: null },
+        ]
+      },
+      {
+        name: 'Neurologic Nursing (part of 30%)',
+        topics: [
+          { text: 'Neurologic Dysfunctions & Altered Level of Consciousness', pts: null },
+          { text: 'Increased Intracranial Pressure', pts: null },
+          { text: 'Cerebrovascular Disorders: Ischemic Stroke, Hemorrhagic Stroke, TIA', pts: null },
+          { text: 'Seizure Disorders: Grand Mal, Petit Mal, Jacksonian, Febrile, Status Epilepticus', pts: null },
+          { text: 'Degenerative: Multiple Sclerosis, Parkinson\'s Disease', pts: null },
+          { text: 'Neurodegenerative: Alzheimer\'s Disease & Dementia', pts: null },
+          { text: 'Neuromuscular: Myasthenia Gravis & Guillain-Barré Syndrome', pts: null },
+          { text: 'Amyotrophic Lateral Sclerosis (ALS)', pts: null },
+          { text: 'Cranial Nerve Disorders: Trigeminal Neuralgia & Bell\'s Palsy', pts: null },
+          { text: 'Infectious Neurologic: Meningitis, Encephalitis', pts: null },
+          { text: 'Pediatric Neuro: Spina Bifida, Hydrocephalus, Cerebral Palsy, Reye\'s Syndrome', pts: null },
+          { text: 'Traumatic Lesions & Peripheral Nerve/Spinal Cord Diseases', pts: null },
+          { text: 'Neuropathies', pts: null },
+        ]
+      },
+      {
+        name: 'Musculoskeletal Nursing (part of 30%)',
+        topics: [
+          { text: 'Musculoskeletal Trauma: Sprain, Strain, Fracture', pts: null },
+          { text: 'Inflammatory Conditions: Tendonitis, Bursitis, Osteoarthritis, Rheumatoid Arthritis, Gouty Arthritis', pts: null },
+          { text: 'Musculoskeletal Disorders: Scoliosis, Osteoporosis, Osteomyelitis, Herniated Nucleus Pulposus, CTS', pts: null },
+          { text: 'Metabolic Bone Disorders', pts: null },
+          { text: 'Occupation-Related Musculoskeletal Disorders', pts: null },
+          { text: 'Musculoskeletal Modalities: Cast, Traction, Crutches, Splints & Braces', pts: null },
+        ]
+      },
+      {
+        name: 'Special Senses – EENT (part of 30%)',
+        topics: [
+          { text: 'Eye Disorders: Retinal Detachment, Glaucoma (Open vs Closed Angle), Cataract, Macular Degeneration', pts: null },
+          { text: 'Ocular & Orbital Trauma', pts: null },
+          { text: 'Infections & Inflammatory Conditions of the Eye', pts: null },
+          { text: 'Ear Disorders: Otitis Media, Menière\'s Disease', pts: null },
+          { text: 'Conditions of External, Middle & Inner Ear', pts: null },
+        ]
+      },
+      {
+        name: 'Part B – Health Education, PALMER & Professional (20%)',
+        topics: [
+          { text: 'Health Education (NP IV)', pts: 5 },
+          { text: 'Collaboration & Teamwork (NP IV)', pts: 5 },
+          { text: 'Reporting & Recording (NP IV)', pts: 5 },
+          { text: 'Personal & Professional Development: CPD Law (RA 10912), Matrix of CPD', pts: 5 },
+          { text: 'Philippine Nursing Act of 2002 (RA 9173): BON, Scope, Prohibitions, Licensure', pts: null },
+          { text: 'Patient\'s Bill of Rights & PNA Code of Ethics', pts: null },
+        ]
+      },
+      {
+        name: 'Pharmacology Review (integrated)',
+        topics: [
+          { text: 'Respiratory Drugs: Bronchodilators, Nasal Decongestants, Mucolytics, Expectorants, Antitussives', pts: null },
+          { text: 'Anti-TB Drugs', pts: null },
+          { text: 'Cardiovascular Drugs: Anti-Lipids, Anti-Anginals, Anticoagulants, Cardiac Glycosides, Thrombolytics', pts: null },
+          { text: 'Antihypertensives', pts: null },
+          { text: 'Urinary System Drugs: Diuretics, Antihyperkalemia, Erythropoietin', pts: null },
+          { text: 'GI Drugs: Antiulcers, Laxatives', pts: null },
+          { text: 'Endocrine Drugs: Antidiabetic Agents, OHAs, Pituitary & Thyroid Hormones, Antithyroids, Corticosteroids', pts: null },
+          { text: 'ANS Drugs: Adrenergics, Anticholinergics, Cholinergics, Anticholinesterase, Adrenergic Blockers', pts: null },
+          { text: 'Anti-Infective Drugs: Penicillins, Cephalosporins, Glycopeptides, Aminoglycosides, Macrolides, Tetracyclines, Sulfonamides, Fluoroquinolones', pts: null },
+          { text: 'Anticonvulsants, Anti-Parkinsonian, Anti-Alzheimer\'s, Antidotes', pts: null },
+        ]
+      },
+    ]
+  },
+  {
+    id: 'np5',
+    name: 'NP V',
+    desc: 'Psychiatric Nursing & Emergency Care',
+    color: 4,
+    groups: [
+      {
+        name: 'Concepts of Mental Health & Illness (20%)',
+        topics: [
+          { text: 'State of Mental Health in the Philippines & Mental Healthcare Delivery System', pts: 5 },
+          { text: 'Psychobiologic Bases of Behavior: Neuroscience, Neuroanatomy/Physiology', pts: null },
+          { text: 'Concepts & Patterns of Human Behavior', pts: null },
+          { text: 'Global & Regional Perspectives on Mental Health', pts: null },
+          { text: 'Therapeutic Models: Psychoanalytic Model (Freud), Developmental Model (Erikson)', pts: 5 },
+          { text: 'Interpersonal Models: Harry Stack Sullivan & Hildegard Peplau', pts: null },
+          { text: 'Cognitive Model: Jean Piaget & Aaron Beck', pts: null },
+          { text: 'Cognitive Therapy & Stress Models', pts: null },
+          { text: 'Understanding Stress: GAS, Acute & Long-term Effects, Measuring Stress & Coping Styles', pts: null },
+          { text: 'Psychopathology – Etiology & Psychodynamics', pts: 10 },
+          { text: 'Schizophrenia & Other Psychoses (Disturbances in Thought/Content)', pts: null },
+          { text: 'Anxiety Disorders: GAD, Panic Disorder, Phobic Disorder, OCD, PTSD', pts: null },
+          { text: 'Mood Disorders: Major Depressive Disorder, Bipolar Disorder, Suicide', pts: null },
+          { text: 'Personality Disorders: Cluster A, B & C', pts: null },
+          { text: 'Cognitive Disorders: Delirium, Dementia, Alzheimer\'s Disease', pts: null },
+          { text: 'Eating Disorders: Anorexia Nervosa & Bulimia Nervosa', pts: null },
+          { text: 'Sexual Disorders', pts: null },
+          { text: 'Substance-Related Disorders: Alcohol, Opioids, Stimulants, Hallucinogens, Cannabis', pts: null },
+          { text: 'Neurodevelopmental Disorders: Autism Spectrum Disorder, ADHD', pts: null },
+          { text: 'Psychosomatic/Somatoform: Conversion Disorder, Hypochondriasis', pts: null },
+          { text: 'Domestic Violence', pts: null },
+        ]
+      },
+      {
+        name: 'Nursing Process in Psychiatric-Mental Health Care (30%)',
+        topics: [
+          { text: 'Assessment: Subjective & Objective Data, Mental Status Exam', pts: 5 },
+          { text: 'Nursing Diagnosis: NANDA Taxonomy & DSM-IV/V', pts: 5 },
+          { text: 'Nurse-Client Relationship: Orientation, Working & Termination Stages', pts: 5 },
+          { text: 'Mental Health Gap Action Programme (mhGAP): DEP, PTSD, PSY, EPI, ID, SUI', pts: 5 },
+          { text: 'Treatment Modalities: ECT, Somatic & Alternative Complementary Therapies', pts: 5 },
+          { text: 'Psychotherapies: Behavioral, Cognitive, Milieu, Art, Dance/Music, Attitude Therapies', pts: null },
+          { text: 'Psychopharmacology: Antipsychotics (Typical vs Atypical), EPS', pts: null },
+          { text: 'Psychopharmacology: Antidepressants (SSRI, TCA, MAOI)', pts: null },
+          { text: 'Psychopharmacology: Anxiolytics (Benzodiazepines)', pts: null },
+          { text: 'Psychopharmacology: Mood Stabilizers (Lithium)', pts: null },
+          { text: 'Psychopharmacology: Stimulants (ADHD treatment)', pts: null },
+          { text: 'Nutrition & Diet Therapy in Psychiatric Nursing', pts: null },
+          { text: 'Evaluation of Care: Outcome-Based', pts: 5 },
+          { text: 'Crisis Interventions: Maturational, Situational & Adventitious', pts: null },
+          { text: 'Therapeutic Communication & Nurse-Client Relationship Phases (Peplau)', pts: null },
+          { text: 'Existential, Gestalt & Cognitive Therapies', pts: null },
+          { text: 'Defense Mechanisms & Ego Theory', pts: null },
+        ]
+      },
+      {
+        name: 'Concepts on Acute Biologic Crisis (30%)',
+        topics: [
+          { text: 'Care of Clients with Altered Ventilatory Function: PE, ARDS, TRALI, VAP, Respiratory Pandemics, Pulmonary HTN, Pneumothorax', pts: 5 },
+          { text: 'Care of Clients with Altered Tissue Perfusion: Acute Ischemic Heart Disease, HF, Cardiogenic Shock, CAD, Hypertensive Crisis, Cardiomyopathy, Arrhythmias', pts: 5 },
+          { text: 'Care of Clients with Altered Elimination: Acute GI Bleeding, Intra-abdominal HTN, Abdominal Compartment Syndrome, Liver Failure, Acute Pancreatitis, DKA, Hypoglycemia, HHNKS, Acute Renal Failure', pts: 5 },
+          { text: 'Care of Clients with Altered Perception: Traumatic Alteration, Acute Ischemic Stroke, SCI, Seizures', pts: 5 },
+          { text: 'Care of Clients with Multi-System Problems: Shock, SIRS, Multi-Organ Dysfunction Syndrome (MODS)', pts: 5 },
+          { text: 'Care of Clients with High Acuity & Emergency Situations', pts: 5 },
+          { text: 'Emergency: ABC – Foreign Body Obstruction, Inhalation Injury, Thoracic Emergency, Trauma, Cardiac Arrest, External Hemorrhage', pts: null },
+          { text: 'Emergency: Disability – Head Injury & Stroke', pts: null },
+          { text: 'Environmental Emergency: Heat-Related, Submersion Injuries, Poisoning, Drowning, Lightning', pts: null },
+        ]
+      },
+      {
+        name: 'Enhancing, Empowering, Enabling Concepts (Part B – 20%)',
+        topics: [
+          { text: 'Nurse-Client Communication: Therapeutic Communication, Modes & Types', pts: 5 },
+          { text: 'Documentation in Psychiatric Nursing: Elements & Methods of Charting', pts: 5 },
+          { text: 'Concepts on Collaboration & Teamwork', pts: 5 },
+          { text: 'Equipment for Acute/Emergency Cases: CPR Machine, Ventilator, Dialysis Machine, ABG Analysis Machine', pts: 5 },
+        ]
+      },
+      {
+        name: 'Principles of Psychiatric Nursing & Nursing Profession',
+        topics: [
+          { text: 'Principles of Psychiatric Nursing', pts: null },
+          { text: 'Fields in Nursing & Philippine Nursing Organizations', pts: null },
+          { text: 'Leadership: Types, Theories, Power, Conflict Management Strategies', pts: null },
+          { text: 'Management: Theories, Functions (PODC), Planning, Organizing, Directing, Controlling', pts: null },
+          { text: 'Quality Assurance & Plan-Do-Check-Act (PDCA)', pts: null },
+          { text: 'Nursing Research: Ethics, Qualitative & Quantitative Research', pts: null },
+        ]
+      },
+    ]
+  }
+];
+
+// ══════════════════════════════════════════════
+//  SCORE TRACKER DATA — PNLE Score Tracker
+// ══════════════════════════════════════════════
+// Items per exam phase are fixed (from the official tracker sheet).
+// Scores are entered by the user and persisted to localStorage.
+const SCORE_GROUPS = [
+  {
+    id: 'np1', name: 'NP1', color: 0,
+    items: { diag: 100, pre: 40, post: 100, ar: 200 },
+    subs: [
+      { id: 'chn', name: 'CHN', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'infectious', name: 'Infectious', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+    ]
+  },
+  {
+    id: 'np2', name: 'NP2', color: 1,
+    items: { diag: 100, pre: 40, post: 100, ar: 200 },
+    subs: [
+      { id: 'obgyn', name: 'OB-GYN', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'pedia', name: 'Pedia', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+    ]
+  },
+  {
+    id: 'np3', name: 'NP3', color: 2,
+    items: { diag: 300, pre: 120, post: 300, ar: 600 },
+    subs: [
+      { id: 'pulmo', name: 'Pulmo', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'hema', name: 'Hema', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'cardio', name: 'Cardio', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'gastro', name: 'Gastro', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'endo', name: 'Endo', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'periop', name: 'Periop', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+    ]
+  },
+  {
+    id: 'np4', name: 'NP4', color: 3,
+    items: { diag: 300, pre: 120, post: 300, ar: 600 },
+    subs: [
+      { id: 'nephro', name: 'Nephro', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'immuno', name: 'Immuno', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'onco', name: 'Onco', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'derma', name: 'Derma', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'emergency', name: 'Emergency', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'fluidelec', name: 'Fluid-Elec, Acid-Base', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+    ]
+  },
+  {
+    id: 'np5', name: 'NP5', color: 4,
+    items: { diag: 200, pre: 80, post: 200, ar: 400 },
+    subs: [
+      { id: 'psych', name: 'Psych', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'neuro', name: 'Neuro', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'eent', name: 'EENT', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'ortho', name: 'Ortho', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'geria', name: 'Geria', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+    ]
+  },
+  {
+    id: 'palmerj', name: 'PALMERJ', color: 1,
+    items: { diag: 150, pre: 60, post: 150, ar: 300 },
+    subs: [
+      { id: 'profadj', name: 'Prof Adj, Ethics, Juris', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'lm', name: 'L&M', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+      { id: 'research', name: 'Research', items: { diag: 50, pre: 20, post: 50, ar: 100 } },
+    ]
+  },
+];
+
+const COMP_EXAM_DATES = ['2/10','2/17','2/24','3/2','3/9','3/16','3/23','3/30','4/6','4/13','4/20','4/27'];
+const COMP_EXAM_SUBJECTS = [
+  { id: 'np1', name: 'NP1 (100 items)', color: 0, scores: [64,74,69,83,77,80,77,84,71,83,84,88] },
+  { id: 'np2', name: 'NP2 (100 items)', color: 1, scores: [74,73,67,72,78,73,78,77,94,76,82,88] },
+  { id: 'np3', name: 'NP3 (100 items)', color: 2, scores: [68,46,74,78,82,75,78,79,80,75,76,88] },
+  { id: 'np4', name: 'NP4 (100 items)', color: 3, scores: [55,51,79,73,76,71,89,77,73,84,74,88] },
+  { id: 'np5', name: 'NP5 (100 items)', color: 4, scores: [63,55,80,64,80,70,82,81,79,80,78,80] },
+];
+
+
+function loadProgress() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch { return {}; }
+}
+
+function saveProgress(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let progress = loadProgress();
+
+// Score Tracker storage (separate key — independent of topic progress)
+const SCORE_STORAGE_KEY = 'nle2026_scores';
+const COMP_STORAGE_KEY = 'nle2026_comp_exams';
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(SCORE_STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveScores(data) {
+  localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(data));
+}
+let scoreData = loadScores();
+
+function loadCompExams() {
+  try {
+    const raw = localStorage.getItem(COMP_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  // First run: seed with the provided historical scores
+  const seeded = {};
+  COMP_EXAM_SUBJECTS.forEach(s => { seeded[s.id] = s.scores.slice(); });
+  return seeded;
+}
+function saveCompExams(data) {
+  localStorage.setItem(COMP_STORAGE_KEY, JSON.stringify(data));
+}
+let compData = loadCompExams();
+
+function topicKey(npId, groupIdx, topicIdx) {
+  return `${npId}_${groupIdx}_${topicIdx}`;
+}
+
+function isDone(npId, groupIdx, topicIdx) {
+  return !!progress[topicKey(npId, groupIdx, topicIdx)];
+}
+
+function toggleTopic(npId, groupIdx, topicIdx) {
+  const key = topicKey(npId, groupIdx, topicIdx);
+  if (progress[key]) {
+    delete progress[key];
+  } else {
+    progress[key] = true;
+  }
+  saveProgress(progress);
+}
+
+// Counts
+function countForNP(npId) {
+  const np = NP_DATA.find(n => n.id === npId);
+  let total = 0, done = 0;
+  np.groups.forEach((g, gi) => {
+    g.topics.forEach((t, ti) => {
+      total++;
+      if (isDone(npId, gi, ti)) done++;
+    });
+  });
+  return { total, done };
+}
+
+function countAll() {
+  let total = 0, done = 0;
+  NP_DATA.forEach(np => {
+    const c = countForNP(np.id);
+    total += c.total;
+    done += c.done;
+  });
+  return { total, done };
+}
+
+// ══════════════════════════
+//  RENDER
+// ══════════════════════════
+const colors = ['#00c9a7', '#38bdf8', '#a78bfa', '#f59e0b', '#fb7185'];
+
+function circumference(r) { return 2 * Math.PI * r; }
+
+function renderNPCards() {
+  const grid = document.getElementById('np-grid');
+  grid.innerHTML = '';
+
+  NP_DATA.forEach((np, idx) => {
+    const { total, done } = countForNP(np.id);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const color = colors[np.color];
+    const miniR = 22;
+    const miniC = circumference(miniR);
+    const miniOff = miniC - (done / total) * miniC;
+
+    const card = document.createElement('div');
+    card.className = 'np-card';
+    card.id = `card-${np.id}`;
+
+    card.innerHTML = `
+      <div class="np-header" onclick="toggleCard('${np.id}')">
+        <div class="np-mini-ring">
+          <svg class="mini-svg" width="54" height="54" viewBox="0 0 54 54">
+            <circle class="mini-bg" cx="27" cy="27" r="${miniR}"/>
+            <circle class="mini-fg s${np.color}" cx="27" cy="27" r="${miniR}"
+              id="mini-ring-${np.id}"
+              stroke-dasharray="${miniC}"
+              stroke-dashoffset="${total ? miniOff : miniC}"/>
+          </svg>
+          <div class="mini-center c${np.color}" id="mini-pct-${np.id}">${pct}%</div>
+        </div>
+        <div class="np-info">
+          <div class="np-name">${np.name} – ${np.desc}</div>
+          <div class="np-desc">${done} / ${total} topics reviewed</div>
+          <div class="np-progress-bar-wrap">
+            <div class="np-progress-bar b${np.color}" id="bar-${np.id}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="np-chevron" id="chev-${np.id}">▾</div>
+      </div>
+      <div class="topics-panel" id="panel-${np.id}">
+        <div class="topics-search">
+          <input type="search" placeholder="Search topics…" oninput="filterTopics('${np.id}', this.value)" />
+        </div>
+        <div class="topics-actions">
+          <button class="topics-action-btn" onclick="checkAll('${np.id}')">✓ Check All</button>
+          <button class="topics-action-btn" onclick="uncheckAll('${np.id}')">✕ Uncheck All</button>
+        </div>
+        <div class="topics-list" id="topics-${np.id}">
+          ${renderTopicsHTML(np)}
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderTopicsHTML(np) {
+  let html = '';
+  np.groups.forEach((group, gi) => {
+    html += `<div class="topic-group-label">${group.name}</div>`;
+    group.topics.forEach((topic, ti) => {
+      const done = isDone(np.id, gi, ti);
+      html += `
+        <div class="topic-item ${done ? 'done' : ''}" id="topic-${np.id}-${gi}-${ti}"
+          onclick="handleTopicClick('${np.id}', ${gi}, ${ti})">
+          <div class="topic-check">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="topic-text">${topic.text}</div>
+          ${topic.pts ? `<div class="topic-pts">${topic.pts}pts</div>` : ''}
+        </div>
+      `;
+    });
+  });
+  return html;
+}
+
+function handleTopicClick(npId, gi, ti) {
+  toggleTopic(npId, gi, ti);
+  const item = document.getElementById(`topic-${npId}-${gi}-${ti}`);
+  item.classList.toggle('done', isDone(npId, gi, ti));
+  updateNPCard(npId);
+  updateOverall();
+  if (document.getElementById('view-stats').classList.contains('active')) updateStats();
+}
+
+// ══════════════════════════════════════════════
+//  PNLE SCORE TRACKER
+// ══════════════════════════════════════════════
+const PHASES = ['diag', 'pre', 'post', 'ar'];
+
+function getScore(groupId, subId, phase) {
+  const v = scoreData[`${groupId}_${subId}_${phase}`];
+  return (v === undefined || v === null || v === '') ? null : Number(v);
+}
+function setScore(groupId, subId, phase, value) {
+  const key = `${groupId}_${subId}_${phase}`;
+  if (value === '' || value === null) delete scoreData[key];
+  else scoreData[key] = Number(value);
+  saveScores(scoreData);
+}
+function pct(score, items) {
+  if (score === null || !items) return null;
+  return (score / items) * 100;
+}
+function fmtPct(p) {
+  return p === null ? '0.00%' : p.toFixed(2) + '%';
+}
+
+function groupTotals(group, phase) {
+  // Sum of sub-scores for a phase (falls back gracefully if some are blank)
+  let sum = 0, any = false;
+  group.subs.forEach(s => {
+    const v = getScore(group.id, s.id, phase);
+    if (v !== null) { sum += v; any = true; }
+  });
+  return any ? sum : null;
+}
+function groupAveragePct(group) {
+  const pcts = PHASES.map(ph => {
+    const total = groupTotals(group, ph);
+    return pct(total, group.items[ph]);
+  }).filter(p => p !== null);
+  if (!pcts.length) return 0;
+  return pcts.reduce((a, b) => a + b, 0) / pcts.length;
+}
+function subAveragePct(group, sub) {
+  const pcts = PHASES.map(ph => pct(getScore(group.id, sub.id, ph), sub.items[ph])).filter(p => p !== null);
+  if (!pcts.length) return 0;
+  return pcts.reduce((a, b) => a + b, 0) / pcts.length;
+}
+
+function renderScoreTracker() {
+  const wrap = document.getElementById('score-groups');
+  wrap.innerHTML = SCORE_GROUPS.map(group => renderScoreGroup(group)).join('');
+  renderCompExams();
+}
+
+function renderScoreGroup(group) {
+  const groupAvg = groupAveragePct(group);
+  const headerRow = `
+    <div class="score-row score-row-group" id="score-group-row-${group.id}">
+      <div class="score-name c${group.color}">${group.name}</div>
+      ${PHASES.map(ph => {
+        const total = groupTotals(group, ph);
+        const p = pct(total, group.items[ph]);
+        return `
+          <div class="score-cell-group">
+            <div class="score-cell-items">${group.items[ph]}</div>
+            <div class="score-cell-num">${total === null ? '—' : total}</div>
+            <div class="score-cell-pct c${group.color}">${fmtPct(p)}</div>
+          </div>`;
+      }).join('')}
+      <div class="score-cell-ave c${group.color}" id="score-group-ave-${group.id}">${fmtPct(groupAvg)}</div>
+    </div>
+  `;
+
+  const subRows = group.subs.map(sub => {
+    const subAvg = subAveragePct(group, sub);
+    return `
+      <div class="score-row score-row-sub" id="score-sub-row-${group.id}-${sub.id}">
+        <div class="score-name score-name-sub">${sub.name}</div>
+        ${PHASES.map(ph => {
+          const score = getScore(group.id, sub.id, ph);
+          const p = pct(score, sub.items[ph]);
+          return `
+            <div class="score-cell">
+              <div class="score-cell-items">${sub.items[ph]}</div>
+              <input type="number" inputmode="numeric" min="0" max="${sub.items[ph]}"
+                class="score-input" value="${score === null ? '' : score}"
+                placeholder="0"
+                oninput="onScoreInput('${group.id}','${sub.id}','${ph}', this.value)" />
+              <div class="score-cell-pct" id="score-pct-${group.id}-${sub.id}-${ph}">${fmtPct(p)}</div>
+            </div>`;
+        }).join('')}
+        <div class="score-cell-ave" id="score-sub-ave-${group.id}-${sub.id}">${fmtPct(subAvg)}</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="score-group">
+      <div class="score-col-headers">
+        <div class="score-name"></div>
+        <div class="score-cell-group">ITEMS</div>
+        <div class="score-cell-group">ITEMS</div>
+        <div class="score-cell-group">ITEMS</div>
+        <div class="score-cell-group">ITEMS</div>
+        <div class="score-cell-ave">AVE</div>
+      </div>
+      <div class="score-phase-headers">
+        <div class="score-name"></div>
+        <div class="score-cell-group">DIAGNOSTIC</div>
+        <div class="score-cell-group">PRE-TEST</div>
+        <div class="score-cell-group">POST-TEST</div>
+        <div class="score-cell-group">ACTIVE RECALL</div>
+        <div class="score-cell-ave"></div>
+      </div>
+      ${headerRow}
+      ${subRows}
+    </div>
+  `;
+}
+
+function onScoreInput(groupId, subId, phase, value) {
+  setScore(groupId, subId, phase, value);
+  const group = SCORE_GROUPS.find(g => g.id === groupId);
+  const sub = group.subs.find(s => s.id === subId);
+
+  // Update this cell's %
+  const score = getScore(groupId, subId, phase);
+  const p = pct(score, sub.items[phase]);
+  const pctEl = document.getElementById(`score-pct-${groupId}-${subId}-${phase}`);
+  if (pctEl) pctEl.textContent = fmtPct(p);
+
+  // Update sub-row average
+  const subAveEl = document.getElementById(`score-sub-ave-${groupId}-${subId}`);
+  if (subAveEl) subAveEl.textContent = fmtPct(subAveragePct(group, sub));
+
+  // Update group row (totals + group %) and group average
+  const total = groupTotals(group, phase);
+  const groupP = pct(total, group.items[phase]);
+  const groupRow = document.getElementById(`score-group-row-${groupId}`);
+  if (groupRow) {
+    const cells = groupRow.querySelectorAll('.score-cell-group');
+    const idx = PHASES.indexOf(phase);
+    if (cells[idx]) {
+      cells[idx].querySelector('.score-cell-num').textContent = total === null ? '—' : total;
+      cells[idx].querySelector('.score-cell-pct').textContent = fmtPct(groupP);
+    }
+  }
+  const groupAveEl = document.getElementById(`score-group-ave-${groupId}`);
+  if (groupAveEl) groupAveEl.textContent = fmtPct(groupAveragePct(group));
+}
+
+function resetScores() {
+  scoreData = {};
+  saveScores(scoreData);
+  renderScoreTracker();
+  showToast('Score tracker reset');
+}
+
+// ── Comprehensive Exams ──
+function compAverage(subjectId) {
+  const scores = (compData[subjectId] || []).filter(v => v !== null && v !== '' && v !== undefined);
+  if (!scores.length) return 0;
+  return scores.reduce((a, b) => a + Number(b), 0) / scores.length;
+}
+
+function renderCompExams() {
+  const wrap = document.getElementById('comp-exam-table');
+  const dateHeaders = COMP_EXAM_DATES.map(d => `<div class="comp-cell comp-head">${d}</div>`).join('');
+
+  const rows = COMP_EXAM_SUBJECTS.map(subj => {
+    const scores = compData[subj.id] || [];
+    const cells = COMP_EXAM_DATES.map((d, i) => {
+      const v = scores[i] === undefined || scores[i] === null ? '' : scores[i];
+      return `<input type="number" inputmode="numeric" min="0" max="100" class="comp-input"
+        value="${v}" placeholder="—"
+        oninput="onCompInput('${subj.id}', ${i}, this.value)" />`;
+    }).join('');
+    const avg = compAverage(subj.id);
+    return `
+      <div class="comp-row">
+        <div class="comp-cell comp-subj c${subj.color}">${subj.name}</div>
+        ${cells}
+        <div class="comp-cell comp-ave c${subj.color}" id="comp-ave-${subj.id}">${avg.toFixed(2)}</div>
+      </div>
+    `;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="comp-row comp-row-header">
+      <div class="comp-cell comp-subj"></div>
+      ${dateHeaders}
+      <div class="comp-cell comp-ave">AVE</div>
+    </div>
+    ${rows}
+  `;
+}
+
+function onCompInput(subjectId, idx, value) {
+  if (!compData[subjectId]) compData[subjectId] = [];
+  compData[subjectId][idx] = value === '' ? null : Number(value);
+  saveCompExams(compData);
+  const avgEl = document.getElementById(`comp-ave-${subjectId}`);
+  if (avgEl) avgEl.textContent = compAverage(subjectId).toFixed(2);
+}
+
+function confirmResetScores() {
+  document.getElementById('reset-scores-modal').classList.add('show');
+}
+function closeScoresModal() {
+  document.getElementById('reset-scores-modal').classList.remove('show');
+}
+function doResetScores() {
+  resetScores();
+  compData = {};
+  COMP_EXAM_SUBJECTS.forEach(s => { compData[s.id] = s.scores.slice(); });
+  saveCompExams(compData);
+  renderCompExams();
+  closeScoresModal();
+}
+
+function updateNPCard(npId) {
+  const np = NP_DATA.find(n => n.id === npId);
+  const { total, done } = countForNP(npId);
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const miniR = 22;
+  const miniC = circumference(miniR);
+  const miniOff = miniC - (done / total) * miniC;
+
+  const ring = document.getElementById(`mini-ring-${npId}`);
+  const pctEl = document.getElementById(`mini-pct-${npId}`);
+  const bar = document.getElementById(`bar-${npId}`);
+  const desc = document.querySelector(`#card-${npId} .np-desc`);
+
+  if (ring) ring.setAttribute('stroke-dashoffset', total ? miniOff : miniC);
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (bar) bar.style.width = pct + '%';
+  if (desc) desc.textContent = `${done} / ${total} topics reviewed`;
+}
+
+function updateOverall() {
+  const { total, done } = countAll();
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const C = circumference(42);
+  const off = C - (done / total) * C;
+
+  document.getElementById('overall-ring').setAttribute('stroke-dashoffset', total ? off : C);
+  document.getElementById('overall-pct').textContent = pct + '%';
+  document.getElementById('overall-done').textContent = done;
+  document.getElementById('overall-left').textContent = total - done;
+  document.getElementById('overall-total').textContent = total;
+}
+
+function toggleCard(npId) {
+  const card = document.getElementById(`card-${npId}`);
+  card.classList.toggle('open');
+}
+
+function filterTopics(npId, query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll(`#topics-${npId} .topic-item`).forEach(item => {
+    const text = item.querySelector('.topic-text').textContent.toLowerCase();
+    item.classList.toggle('hidden', q && !text.includes(q));
+  });
+}
+
+function checkAll(npId) {
+  const np = NP_DATA.find(n => n.id === npId);
+  np.groups.forEach((g, gi) => {
+    g.topics.forEach((t, ti) => {
+      if (!isDone(npId, gi, ti)) {
+        progress[topicKey(npId, gi, ti)] = true;
+        const item = document.getElementById(`topic-${npId}-${gi}-${ti}`);
+        if (item) item.classList.add('done');
+      }
+    });
+  });
+  saveProgress(progress);
+  updateNPCard(npId);
+  updateOverall();
+  showToast('All topics checked ✓');
+}
+
+function uncheckAll(npId) {
+  const np = NP_DATA.find(n => n.id === npId);
+  np.groups.forEach((g, gi) => {
+    g.topics.forEach((t, ti) => {
+      delete progress[topicKey(npId, gi, ti)];
+      const item = document.getElementById(`topic-${npId}-${gi}-${ti}`);
+      if (item) item.classList.remove('done');
+    });
+  });
+  saveProgress(progress);
+  updateNPCard(npId);
+  updateOverall();
+  showToast('All topics unchecked');
+}
+
+// ══════════════════════════
+//  STATS VIEW
+// ══════════════════════════
+function updateStats() {
+  const { total, done } = countAll();
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-pct').textContent = pct + '%';
+
+  let bestNP = null, bestPct = -1, worstNP = null, worstPct = 101;
+  const rows = document.getElementById('np-stat-rows');
+  rows.innerHTML = '';
+
+  NP_DATA.forEach((np, idx) => {
+    const c = countForNP(np.id);
+    const p = c.total ? Math.round((c.done / c.total) * 100) : 0;
+    if (p > bestPct) { bestPct = p; bestNP = np; }
+    if (p < worstPct) { worstPct = p; worstNP = np; }
+
+    rows.innerHTML += `
+      <div class="np-stat-row">
+        <div class="np-stat-name c${np.color}">${np.name}</div>
+        <div class="np-stat-bar-wrap">
+          <div class="np-stat-bar b${np.color}" style="width:${p}%"></div>
+        </div>
+        <div class="np-stat-pct c${np.color}">${p}%</div>
+        <div class="np-stat-count">${c.done}/${c.total}</div>
+      </div>
+    `;
+  });
+
+  if (bestNP) {
+    document.getElementById('stat-best').textContent = bestNP.name;
+    document.getElementById('stat-best-pct').textContent = bestPct + '% complete';
+  }
+  if (worstNP) {
+    document.getElementById('stat-worst').textContent = worstNP.name;
+    document.getElementById('stat-worst-pct').textContent = worstPct + '% complete';
+  }
+}
+
+// ══════════════════════════
+//  NAV & VIEWS
+// ══════════════════════════
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  document.getElementById(`nav-${name}`).classList.add('active');
+  if (name === 'stats') updateStats();
+  if (name === 'scores') renderScoreTracker();
+}
+
+// ══════════════════════════
+//  MODAL & RESET
+// ══════════════════════════
+function confirmReset() {
+  document.getElementById('reset-modal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('reset-modal').classList.remove('show');
+}
+function doReset() {
+  progress = {};
+  saveProgress(progress);
+  closeModal();
+  // Re-render all
+  renderNPCards();
+  updateOverall();
+  showToast('Progress reset');
+}
+document.getElementById('reset-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('reset-scores-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeScoresModal();
+});
+
+// ══════════════════════════
+//  TOAST
+// ══════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════
+//  INSTALL BANNER
+// ══════════════════════════
+let deferredPrompt = null;
+
+function dismissInstallBanner() {
+  document.getElementById('install-banner').style.display = 'none';
+  try { localStorage.setItem('nle-install-dismissed', '1'); } catch(e) {}
+}
+
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+    });
+  }
+}
+
+// Android / Chrome: capture the native install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  try { if (localStorage.getItem('nle-install-dismissed')) return; } catch(e) {}
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  const banner = document.getElementById('install-banner');
+  const msg    = document.getElementById('install-banner-msg');
+  const btn    = document.getElementById('install-banner-btn');
+  if (banner) {
+    if (msg) msg.textContent = 'Add to your home screen for offline access.';
+    if (btn) btn.style.display = 'inline-block';
+    banner.style.display = 'flex';
+  }
+});
+
+// If the app gets installed, hide the banner and remember it.
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+  try { localStorage.setItem('nle-install-dismissed', '1'); } catch(e) {}
+});
+
+// iOS Safari: show manual instructions if not already installed
+window.addEventListener('DOMContentLoaded', () => {
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = window.navigator.standalone === true ||
+                        window.matchMedia('(display-mode: standalone)').matches;
+  const isDismissed = (() => { try { return localStorage.getItem('nle-install-dismissed'); } catch(e) { return false; } })();
+
+  if (isIOS && !isStandalone && !isDismissed) {
+    const banner = document.getElementById('install-banner');
+    const title  = document.getElementById('install-banner-title');
+    const msg    = document.getElementById('install-banner-msg');
+    if (banner) {
+      if (title) title.textContent = '📱 Add to Home Screen';
+      if (msg)   msg.textContent   = 'Open in Safari → tap Share ↑ → Add to Home Screen';
+      banner.style.display = 'flex';
+    }
+  }
+});
+
+// ══════════════════════════
+//  INIT
+// ══════════════════════════
+renderNPCards();
+updateOverall();
+</script>
+
+<!-- Service Worker Registration + Auto-Update -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+
+    // Check for a new version every time the app is opened/foregrounded.
+    reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update().catch(() => {});
+    });
+
+    // A new service worker was found and is installed, waiting to activate.
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && reg.waiting) {
+          showUpdateBanner(reg);
+        }
+      });
+    });
+
+    // If there's already a waiting worker on load (e.g. updated in background).
+    if (reg.waiting) showUpdateBanner(reg);
+  }).catch(() => {});
+
+  // When the new SW takes control, reload once to load the new files.
+  // User progress lives in localStorage, which the service worker never
+  // touches — so this reload never loses any saved data.
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+
+function showUpdateBanner(reg) {
+  const banner = document.getElementById('update-banner');
+  if (!banner) return;
+  banner.style.display = 'flex';
+  document.getElementById('update-banner-btn').onclick = () => {
+    banner.style.display = 'none';
+    if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+  };
+}
+</script>
+
+</body>
+</html>
