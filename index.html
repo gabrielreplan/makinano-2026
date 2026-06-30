@@ -433,6 +433,150 @@
     }
     .stat-card-sub { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
 
+    /* ── STUDY PLAN ── */
+    .plan-card {
+      margin: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .plan-card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .plan-card-sub { font-size: 0.74rem; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+    .plan-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .plan-input-row input[type="date"] {
+      flex: 1;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-size: 0.82rem;
+      font-family: 'Inter', sans-serif;
+      padding: 10px 12px;
+      border-radius: 10px;
+      outline: none;
+      min-width: 0;
+      color-scheme: dark;
+    }
+    .plan-input-row input[type="date"]:focus { border-color: var(--teal); }
+    .plan-btn {
+      background: var(--teal);
+      color: #04241d;
+      border: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      touch-action: manipulation;
+    }
+    .plan-btn:active { background: var(--teal2); }
+    .plan-clear {
+      font-size: 0.68rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      text-decoration: underline;
+      text-decoration-color: var(--border);
+      margin-top: 10px;
+      cursor: pointer;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+    .plan-results { margin-top: 16px; display: none; }
+    .plan-results.show { display: block; }
+    .plan-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .plan-summary-item {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .plan-summary-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--teal);
+    }
+    .plan-summary-lbl { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+    .plan-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: var(--navy3);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .plan-note b { color: var(--white); }
+    .plan-week-title {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+    .plan-day-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .plan-day-row:last-child { border-bottom: none; }
+    .plan-day-name {
+      font-size: 0.74rem;
+      font-weight: 600;
+      width: 38px;
+      flex-shrink: 0;
+    }
+    .plan-day-task { font-size: 0.76rem; flex: 1; }
+    .plan-day-task.rest { color: var(--muted); font-style: italic; }
+    .plan-day-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .plan-subject-title {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+    .plan-subj-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.74rem;
+    }
+    .plan-subj-row:last-child { border-bottom: none; }
+    .plan-subj-name { width: 78px; flex-shrink: 0; font-weight: 500; }
+    .plan-subj-detail { flex: 1; color: var(--muted); }
+    .plan-warning {
+      font-size: 0.74rem;
+      color: var(--rose);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
     .np-stats-section { padding: 16px; }
     .np-stat-row {
       display: flex;
@@ -849,6 +993,18 @@
       <div class="stat-card-val" style="font-size:1rem; padding-top:6px;" id="stat-worst">—</div>
       <div class="stat-card-sub" id="stat-worst-pct"></div>
     </div>
+  </div>
+
+  <div class="plan-card">
+    <div class="plan-card-title">🎯 Exam Countdown &amp; Study Plan</div>
+    <div class="plan-card-sub">Input your desired date to finish all these. We'll build a day-by-day pacing guide — including rest days — so you finish on time.</div>
+    <div class="plan-input-row">
+      <input type="date" id="plan-exam-date" />
+      <button class="plan-btn" onclick="generateStudyPlan()">Generate</button>
+    </div>
+    <button class="plan-clear" id="plan-clear-btn" onclick="clearStudyPlan()" style="display:none;">Clear plan</button>
+
+    <div class="plan-results" id="plan-results"></div>
   </div>
 
   <div class="np-stats-section">
@@ -2035,6 +2191,175 @@ function updateStats() {
 }
 
 // ══════════════════════════
+//  STUDY PLAN (Exam Countdown)
+// ══════════════════════════
+const PLAN_DATE_KEY = 'nle_exam_date';
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function clearStudyPlan() {
+  try { localStorage.removeItem(PLAN_DATE_KEY); } catch(e) {}
+  document.getElementById('plan-exam-date').value = '';
+  document.getElementById('plan-results').classList.remove('show');
+  document.getElementById('plan-results').innerHTML = '';
+  document.getElementById('plan-clear-btn').style.display = 'none';
+}
+
+function loadSavedPlanDate() {
+  let saved = '';
+  try { saved = localStorage.getItem(PLAN_DATE_KEY) || ''; } catch(e) {}
+  if (saved) {
+    document.getElementById('plan-exam-date').value = saved;
+    renderStudyPlan(saved);
+  }
+}
+
+function generateStudyPlan() {
+  const val = document.getElementById('plan-exam-date').value;
+  if (!val) { showToast('Pick your exam date first'); return; }
+  try { localStorage.setItem(PLAN_DATE_KEY, val); } catch(e) {}
+  renderStudyPlan(val);
+}
+
+function renderStudyPlan(dateStr) {
+  const results = document.getElementById('plan-results');
+  const clearBtn = document.getElementById('plan-clear-btn');
+  clearBtn.style.display = 'inline-block';
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const examDate = new Date(dateStr + 'T00:00:00');
+
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysLeft = Math.round((examDate - today) / msPerDay);
+
+  const { total, done } = countAll();
+  const remaining = total - done;
+
+  if (isNaN(examDate.getTime())) {
+    results.innerHTML = `<div class="plan-warning">Please pick a valid date.</div>`;
+    results.classList.add('show');
+    return;
+  }
+
+  if (daysLeft <= 0) {
+    results.innerHTML = `<div class="plan-warning">That date has already passed (or is today). Pick a future exam date to get a pacing plan.</div>`;
+    results.classList.add('show');
+    return;
+  }
+
+  if (remaining <= 0) {
+    results.innerHTML = `
+      <div class="plan-summary-grid">
+        <div class="plan-summary-item">
+          <div class="plan-summary-num">${daysLeft}</div>
+          <div class="plan-summary-lbl">days until exam</div>
+        </div>
+        <div class="plan-summary-item">
+          <div class="plan-summary-num">100%</div>
+          <div class="plan-summary-lbl">topics done</div>
+        </div>
+      </div>
+      <div class="plan-note">🎉 <b>You've finished every topic!</b> Spend the remaining ${daysLeft} day${daysLeft===1?'':'s'} on comprehensive exams, weak-area review, and rest — no need to cram new material.</div>
+    `;
+    results.classList.add('show');
+    return;
+  }
+
+  // Reserve the final stretch for pure review / mock exams (no new topics).
+  const reviewDays = Math.min(7, Math.max(2, Math.round(daysLeft * 0.1)));
+  const studyWindow = Math.max(1, daysLeft - reviewDays);
+
+  // Roughly 1 rest day per 7-day block within the study window.
+  const restDaysCount = Math.floor(studyWindow / 7);
+  const activeStudyDays = Math.max(1, studyWindow - restDaysCount);
+
+  const topicsPerDay = Math.ceil(remaining / activeStudyDays);
+
+  // Rough time estimate per topic (~25 min average incl. notes/recall).
+  const minsPerDay = topicsPerDay * 25;
+  const hoursPerDay = Math.round((minsPerDay / 60) * 10) / 10;
+
+  const tight = topicsPerDay > 12; // flag if pace looks unrealistic
+
+  // Per-subject allocation, proportional to each subject's remaining topics.
+  const subjData = NP_DATA.map(np => {
+    const c = countForNP(np.id);
+    const rem = c.total - c.done;
+    return { np, rem };
+  }).filter(s => s.rem > 0);
+
+  let subjRows = '';
+  subjData.forEach(s => {
+    const daysForSubj = Math.max(1, Math.round(activeStudyDays * (s.rem / remaining)));
+    const perDay = Math.max(1, Math.ceil(s.rem / daysForSubj));
+    subjRows += `
+      <div class="plan-subj-row">
+        <div class="plan-subj-name c${s.np.color}">${s.np.name}</div>
+        <div class="plan-subj-detail">${s.rem} topic${s.rem===1?'':'s'} left · ~${perDay}/day · ~${daysForSubj} day${daysForSubj===1?'':'s'}</div>
+      </div>
+    `;
+  });
+
+  // Build a sample weekly cycle (Mon–Sat study, Sun rest), cycling through
+  // subjects in order of how many topics they have remaining (most first).
+  const sortedSubj = [...subjData].sort((a,b) => b.rem - a.rem);
+  let weekRows = '';
+  let subjCursor = 0;
+  for (let d = 0; d < 7; d++) {
+    const dow = (today.getDay() + d) % 7;
+    const isRest = dow === 0; // Sunday = rest
+    let task = 'Rest &amp; light recall';
+    let dotColor = 'var(--border)';
+    if (!isRest && sortedSubj.length) {
+      const s = sortedSubj[subjCursor % sortedSubj.length];
+      task = `${s.np.name} — ~${Math.min(s.rem, topicsPerDay)} topics`;
+      dotColor = colors[NP_DATA.findIndex(n => n.id === s.np.id) % colors.length];
+      subjCursor++;
+    }
+    weekRows += `
+      <div class="plan-day-row">
+        <div class="plan-day-dot" style="background:${dotColor};"></div>
+        <div class="plan-day-name">${DAY_NAMES[dow]}</div>
+        <div class="plan-day-task${isRest?' rest':''}">${task}</div>
+      </div>
+    `;
+  }
+
+  results.innerHTML = `
+    <div class="plan-summary-grid">
+      <div class="plan-summary-item">
+        <div class="plan-summary-num">${daysLeft}</div>
+        <div class="plan-summary-lbl">days until exam</div>
+      </div>
+      <div class="plan-summary-item">
+        <div class="plan-summary-num">${remaining}</div>
+        <div class="plan-summary-lbl">topics left</div>
+      </div>
+      <div class="plan-summary-item">
+        <div class="plan-summary-num">${topicsPerDay}</div>
+        <div class="plan-summary-lbl">topics/day to stay on pace</div>
+      </div>
+      <div class="plan-summary-item">
+        <div class="plan-summary-num">~${hoursPerDay}h</div>
+        <div class="plan-summary-lbl">est. study time/day</div>
+      </div>
+    </div>
+
+    <div class="plan-note">
+      📅 Plan: study <b>${activeStudyDays} day${activeStudyDays===1?'':'s'}</b> (about 6 days a week, with 1 rest day weekly so you don't burn out), then spend the last <b>${reviewDays} day${reviewDays===1?'':'s'}</b> before your exam on full comprehensive review and mock exams only — no new topics.
+      ${tight ? '<br><br>⚠️ That\'s a fast pace. Consider starting earlier or studying longer hours if possible.' : ''}
+    </div>
+
+    <div class="plan-subject-title">Suggested pace per subject</div>
+    ${subjRows}
+
+    <div class="plan-week-title">Sample weekly pattern (repeat until review week)</div>
+    ${weekRows}
+  `;
+  results.classList.add('show');
+}
+
+// ══════════════════════════
 //  NAV & VIEWS
 // ══════════════════════════
 function switchView(name) {
@@ -2042,7 +2367,7 @@ function switchView(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`view-${name}`).classList.add('active');
   document.getElementById(`nav-${name}`).classList.add('active');
-  if (name === 'stats') updateStats();
+  if (name === 'stats') { updateStats(); loadSavedPlanDate(); }
   if (name === 'scores') renderScoreTracker();
 }
 
@@ -2170,6 +2495,13 @@ window.addEventListener('DOMContentLoaded', () => {
 // ══════════════════════════
 renderNPCards();
 updateOverall();
+(() => {
+  const di = document.getElementById('plan-exam-date');
+  if (di) {
+    const t = new Date();
+    di.min = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  }
+})();
 </script>
 
 <!-- Service Worker Registration + Auto-Update -->
