@@ -41,7 +41,7 @@
       --radius: 16px;
     }
 
-    html { font-size: 16px; }
+    html { font-size: 16px; overflow-x: hidden; width: 100%; }
     body {
       background: var(--navy);
       color: var(--white);
@@ -49,6 +49,8 @@
       min-height: 100vh;
       min-height: 100dvh;
       padding-bottom: env(safe-area-inset-bottom, 20px);
+      overflow-x: hidden;
+      width: 100%;
     }
 
     /* ── TOP BAR ── */
@@ -60,10 +62,12 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 14px 20px 12px;
+      padding: 14px 16px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      row-gap: 8px;
     }
     .topbar-title {
       font-family: 'Space Grotesk', sans-serif;
@@ -81,7 +85,10 @@
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px 8px;
+      max-width: 100%;
     }
     .topbar-email {
       font-size: 0.7rem;
@@ -99,9 +106,17 @@
     }
     .topbar-sync.is-syncing { color: var(--teal); }
     .topbar-sync.is-error { color: #ff6b6b; }
-    @media (max-width: 380px) {
+    @media (max-width: 480px) {
       .topbar-email { display: none; }
       .topbar-sync { display: none; }
+      .topbar { padding-left: 14px; padding-right: 14px; }
+      .topbar-right { gap: 6px; }
+      .reset-btn { padding: 6px 9px; font-size: 0.68rem; }
+      .refresh-btn { width: 30px; height: 30px; font-size: 1rem; }
+    }
+    @media (max-width: 360px) {
+      .topbar-title { font-size: 1rem; }
+      .reset-btn { padding: 5px 8px; font-size: 0.65rem; }
     }
     .reset-btn {
       background: none;
@@ -647,6 +662,14 @@
       -webkit-overflow-scrolling: touch;
     }
     .score-scroll-inner { min-width: 640px; }
+    @media (max-width: 700px) {
+      .score-scroll {
+        /* fades the right edge a touch so it reads as "swipe for more" on phones,
+           where these tables are wider than the screen by design */
+        mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+      }
+    }
 
     /* ── MAKINANO TABLE (single swipeable row) ── */
     .makinano-table {
