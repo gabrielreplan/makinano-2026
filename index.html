@@ -107,16 +107,22 @@
     .topbar-sync.is-syncing { color: var(--teal); }
     .topbar-sync.is-error { color: #ff6b6b; }
     @media (max-width: 480px) {
-      .topbar-email { display: none; }
-      .topbar-sync { display: none; }
-      .topbar { padding-left: 14px; padding-right: 14px; }
-      .topbar-right { gap: 6px; }
-      .reset-btn { padding: 6px 9px; font-size: 0.68rem; }
-      .refresh-btn { width: 30px; height: 30px; font-size: 1rem; }
+      /* Mobile top-bar adjustments: everything is visible and wraps gracefully */
+      .topbar { padding: 10px 12px 8px; }
+      .topbar-title { font-size: 0.95rem; }
+      .topbar-sub { font-size: 0.6rem; }
+      .topbar-right { gap: 4px; }
+      .topbar-email { font-size: 0.6rem; max-width: 90px; }
+      .topbar-sync { font-size: 0.55rem; }
+      .reset-btn { padding: 5px 8px; font-size: 0.6rem; }
+      .refresh-btn { width: 28px; height: 28px; font-size: 0.9rem; }
     }
     @media (max-width: 360px) {
-      .topbar-title { font-size: 1rem; }
-      .reset-btn { padding: 5px 8px; font-size: 0.65rem; }
+      .topbar-title { font-size: 0.85rem; }
+      .topbar-email { max-width: 70px; font-size: 0.55rem; }
+      .topbar-sync { font-size: 0.5rem; }
+      .reset-btn { padding: 4px 6px; font-size: 0.55rem; }
+      .refresh-btn { width: 24px; height: 24px; font-size: 0.8rem; }
     }
     .reset-btn {
       background: none;
@@ -1142,6 +1148,14 @@
       margin-top: 14px;
     }
     #app-shell { display: none; }
+    @media (max-width: 400px) {
+      #auth-gate { padding: 16px; }
+      .gate-card { padding: 16px; }
+      .gate-title { font-size: 1.1rem; }
+      .gate-sub { font-size: 0.75rem; }
+      .gate-instructions { font-size: 0.7rem; padding: 10px 12px; }
+      .gate-email { font-size: 0.7rem; padding: 6px 10px; }
+    }
   </style>
 </head>
 <body>
