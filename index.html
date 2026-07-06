@@ -1070,6 +1070,21 @@
       text-decoration: none;
     }
     .gate-msg-btn:hover { opacity: 0.9; }
+    .gate-msg-copy-btn {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.68rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .gate-msg-copy-btn:hover { border-color: var(--teal); color: var(--teal); }
     .gate-signout {
       margin-top: 18px;
       background: none;
@@ -1142,7 +1157,8 @@
         <code id="gate-uid"></code>
         <button class="gate-copy-btn" onclick="gateCopyUid()">Copy ID</button>
       </div>
-      <a class="gate-msg-btn" id="gate-msg-link" href="#" target="_blank" rel="noopener">💬 Message me my payment proof</a>
+      <a class="gate-msg-btn" id="gate-msg-link" href="#" target="_blank" rel="noopener">💬 Open Messenger</a>
+      <button class="gate-msg-copy-btn" onclick="gateCopyMsg()">Copy my message first (Messenger can't auto-fill it)</button>
     </div>
     <button class="gate-signout" onclick="gateSignOut()">Sign out</button>
   </div>
@@ -1201,6 +1217,10 @@
     const uid = document.getElementById('gate-uid').textContent;
     navigator.clipboard.writeText(uid).then(() => showToastSafe('Copied!'));
   }
+  function gateCopyMsg() {
+    const msg = window.__gatePendingMsg || '';
+    navigator.clipboard.writeText(msg).then(() => showToastSafe('Message copied — paste it in Messenger!'));
+  }
   function showToastSafe(msg) {
     // showToast() is defined later in the app script; guard in case it isn't ready yet.
     if (typeof showToast === 'function') showToast(msg);
@@ -1245,7 +1265,8 @@
         document.getElementById('gate-pending-email').textContent = user.email;
         document.getElementById('gate-uid').textContent = user.uid;
         const msgText = `Hi! I just paid for NLE Tracker access.\nEmail: ${user.email}\nUser ID: ${user.uid}`;
-        document.getElementById('gate-msg-link').href = 'https://m.me/john.gabriel.replan?text=' + encodeURIComponent(msgText);
+        window.__gatePendingMsg = msgText;
+        document.getElementById('gate-msg-link').href = 'https://m.me/yourusername';
         showGateScreen('pending');
       }
     }, err => {
