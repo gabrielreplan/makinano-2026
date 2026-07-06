@@ -1053,6 +1053,23 @@
       flex-shrink: 0;
     }
     .gate-copy-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .gate-msg-btn {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      background: #0084FF;
+      border: none;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      text-decoration: none;
+    }
+    .gate-msg-btn:hover { opacity: 0.9; }
     .gate-signout {
       margin-top: 18px;
       background: none;
@@ -1125,6 +1142,7 @@
         <code id="gate-uid"></code>
         <button class="gate-copy-btn" onclick="gateCopyUid()">Copy ID</button>
       </div>
+      <a class="gate-msg-btn" id="gate-msg-link" href="#" target="_blank" rel="noopener">💬 Message me my payment proof</a>
     </div>
     <button class="gate-signout" onclick="gateSignOut()">Sign out</button>
   </div>
@@ -1226,6 +1244,8 @@
       } else {
         document.getElementById('gate-pending-email').textContent = user.email;
         document.getElementById('gate-uid').textContent = user.uid;
+        const msgText = `Hi! I just paid for NLE Tracker access.\nEmail: ${user.email}\nUser ID: ${user.uid}`;
+        document.getElementById('gate-msg-link').href = 'https://m.me/john.gabriel.replan?text=' + encodeURIComponent(msgText);
         showGateScreen('pending');
       }
     }, err => {
@@ -1249,6 +1269,9 @@
   <div class="topbar-right">
     <span class="topbar-email" id="topbar-email" title=""></span>
     <button class="refresh-btn" onclick="refreshApp()" title="Check for updates" aria-label="Refresh">↻</button>
+    <button class="reset-btn" onclick="exportProgress()" title="Save a backup file">Export</button>
+    <button class="reset-btn" onclick="triggerImport()" title="Restore from a backup file">Import</button>
+    <input type="file" id="import-file-input" accept="application/json" style="display:none" onchange="importProgress(event)">
     <button class="reset-btn" onclick="confirmReset()">Reset All</button>
     <button class="reset-btn" onclick="gateSignOut()" title="Sign out">Sign out</button>
   </div>
@@ -2017,6 +2040,68 @@ function loadCompExams() {
 }
 function saveCompExams(data) {
   localStorage.setItem(COMP_STORAGE_KEY, JSON.stringify(data));
+}
+
+// ══════════════════════════════════════════════
+//  BACKUP: EXPORT / IMPORT (bundles all progress keys into one file)
+// ══════════════════════════════════════════════
+function exportProgress() {
+  try {
+    const backup = {
+      exportedAt: new Date().toISOString(),
+      app: 'NLE 2026 Reviewer Tracker',
+      data: {
+        [STORAGE_KEY]: localStorage.getItem(STORAGE_KEY) || '{}',
+        [SCORE_STORAGE_KEY]: localStorage.getItem(SCORE_STORAGE_KEY) || '{}',
+        [COMP_STORAGE_KEY]: localStorage.getItem(COMP_STORAGE_KEY) || '{}',
+        [PLAN_DATE_KEY]: localStorage.getItem(PLAN_DATE_KEY) || ''
+      }
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `nle-tracker-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToastSafe('Backup saved!');
+  } catch (e) {
+    showToastSafe('Export failed: ' + e.message);
+  }
+}
+
+function triggerImport() {
+  document.getElementById('import-file-input').click();
+}
+
+function importProgress(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      const data = parsed.data || {};
+      if (!confirm('This will replace your current progress with the backup file. Continue?')) {
+        event.target.value = '';
+        return;
+      }
+      if (data[STORAGE_KEY] !== undefined) localStorage.setItem(STORAGE_KEY, data[STORAGE_KEY]);
+      if (data[SCORE_STORAGE_KEY] !== undefined) localStorage.setItem(SCORE_STORAGE_KEY, data[SCORE_STORAGE_KEY]);
+      if (data[COMP_STORAGE_KEY] !== undefined) localStorage.setItem(COMP_STORAGE_KEY, data[COMP_STORAGE_KEY]);
+      if (data[PLAN_DATE_KEY] !== undefined) localStorage.setItem(PLAN_DATE_KEY, data[PLAN_DATE_KEY]);
+      showToastSafe('Backup restored! Reloading...');
+      setTimeout(() => location.reload(), 800);
+    } catch (e) {
+      showToastSafe('Import failed: invalid backup file');
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
 }
 let compData = loadCompExams();
 
