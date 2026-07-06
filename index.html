@@ -1143,10 +1143,10 @@
   const $loading   = document.getElementById('gate-loading');
   const $signedout = document.getElementById('gate-signedout');
   const $pending   = document.getElementById('gate-pending');
-  const $appShell  = document.getElementById('app-shell');
   const $gateError = document.getElementById('gate-error');
 
   function showGateScreen(name) {
+    const $appShell = document.getElementById('app-shell');
     $loading.style.display   = name === 'loading'   ? 'flex' : 'none';
     $signedout.style.display = name === 'signedout' ? 'block' : 'none';
     $pending.style.display   = name === 'pending'   ? 'block' : 'none';
