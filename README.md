@@ -12,6 +12,7 @@ A Progressive Web App (PWA) to track your Philippine Nursing Licensure Exam 2026
 - 🔄 Auto-updates in the background — when a new version is ready you'll see an "Update available" banner; tapping it refreshes the app without touching your saved data
 - 📱 Installable on iPad, iPhone, Android (works offline!)
 - 🔐 **Google Sign-In + paywall** — visitors sign in with Google, then see a "payment pending" screen until you manually approve them. Once approved, they're in for good (no re-approval needed, unless you revoke it).
+- ☁️ **Automatic cloud sync** — once approved, progress/scores/comp-exam data/exam date are mirrored to that person's own Firestore document. Sign in with the same Google account on another phone/tablet/browser and it pulls the same data down automatically — no manual export/import needed. A small "☁ Synced" indicator in the top bar shows sync status.
 
 ---
 
@@ -37,12 +38,13 @@ This uses **Firebase**, Google's free backend service (Spark/free plan — no co
        match /users/{userId} {
          allow read: if request.auth != null && request.auth.uid == userId;
          allow create: if request.auth != null && request.auth.uid == userId;
-         allow update: if false; // only you can approve, via the Firebase Console
+         allow update: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.approved == resource.data.approved;
        }
      }
    }
    ```
-   This means: a signed-in user can only see/create *their own* record, and can never set their own `approved` field to `true` — only you can do that, from the console.
+   This means: a signed-in user can only see/create *their own* record, and can update their own `sync` data (that's what powers cloud sync, below) — but `allow update` requires the `approved` field to stay exactly as it already was, so a user can never flip their own `approved` from `false` to `true`. Only you can do that, from the console.
 
 ### Step D: Get your config keys and paste them into `index.html`
 1. Left sidebar: click the **⚙️ gear → Project settings**
@@ -67,6 +69,20 @@ This uses **Firebase**, Google's free backend service (Spark/free plan — no co
 Still in `index.html`, search for `[set your price]` and `[GCash / bank name]` (they appear twice each) and fill in your real price and payment info (GCash number, bank details, etc.), and `[your Messenger/FB name or contact]` with how buyers should reach you.
 
 ---
+
+## ☁️ How Cloud Sync works
+
+Once someone is approved, their progress/scores/comp-exam data/exam date are:
+1. Kept in `localStorage` on their device (instant, works offline).
+2. Mirrored (debounced ~1s after each change) into their own `users/{uid}` Firestore document, under a `sync` field.
+
+When they sign in with the *same Google account* on another device, the app compares timestamps and — if the cloud copy is newer — pulls it down and reloads automatically. No button to press.
+
+**Good to know:**
+- This is "last write wins," not a merge. If you edit on two devices at the same moment while both are online, whichever save reaches the server last overwrites the other. For one person switching between their own phone/tablet, this is a non-issue in practice.
+- Sync is scoped to each Google account's own Firestore document — one buyer's data never touches another's.
+- If two *different* people ever sign into the *same* browser/device one after another (a shared tablet, say), the app doesn't currently namespace `localStorage` by account, so there's a brief window where the second person could see the first person's cached local data until the cloud sync for their own account kicks in and reloads it. In practice this only matters on a literally shared device — each buyer using their own phone/browser is unaffected.
+- Sync still requires the exact same Firestore rules update below (the `approved` field is still protected — only you can change it from the console).
 
 ## ✅ Approving a buyer after payment
 

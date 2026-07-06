@@ -91,8 +91,17 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    .topbar-sync {
+      font-size: 0.65rem;
+      color: var(--muted);
+      white-space: nowrap;
+      opacity: 0.85;
+    }
+    .topbar-sync.is-syncing { color: var(--teal); }
+    .topbar-sync.is-error { color: #ff6b6b; }
     @media (max-width: 380px) {
       .topbar-email { display: none; }
+      .topbar-sync { display: none; }
     }
     .reset-btn {
       background: none;
@@ -1185,6 +1194,11 @@
   const db = firebase.firestore();
   const provider = new firebase.auth.GoogleAuthProvider();
 
+  // ── Cloud Sync state (see CLOUD SYNC LOGIC further below) ──
+  let cloudSyncEnabled = false;
+  let awaitingOwnPushAck = false;
+  let pushDebounceTimer = null;
+
   const $loading   = document.getElementById('gate-loading');
   const $signedout = document.getElementById('gate-signedout');
   const $pending   = document.getElementById('gate-pending');
@@ -1210,7 +1224,126 @@
 
   function gateSignOut() {
     if (unsubscribeUserDoc) { unsubscribeUserDoc(); unsubscribeUserDoc = null; }
+    clearTimeout(pushDebounceTimer);
+    cloudSyncEnabled = false;
+    awaitingOwnPushAck = false;
+    try { localStorage.removeItem('nle_last_cloud_ts'); } catch(e) {}
+    setSyncStatus('');
     auth.signOut();
+  }
+
+  // ══════════════════════════════════════════════
+  //  CLOUD SYNC LOGIC
+  //  Progress/scores/comp-exam/plan-date are cached in localStorage (for
+  //  instant load + offline use) and mirrored into this user's own
+  //  Firestore document under a `sync` field, so signing in with the same
+  //  Google account on another device pulls the same data down.
+  //
+  //  Conflict handling is intentionally simple last-write-wins: the device
+  //  that saved most recently (by server timestamp) wins. That's fine for
+  //  one person using a couple of their own devices; it is NOT a CRDT merge,
+  //  so editing simultaneously on two devices at once can overwrite one
+  //  side's changes.
+  // ══════════════════════════════════════════════
+
+  function setSyncStatus(state) {
+    const $el = document.getElementById('topbar-sync');
+    if (!$el) return;
+    $el.classList.remove('is-syncing', 'is-error');
+    if (state === 'syncing') {
+      $el.textContent = '☁ Syncing…';
+      $el.classList.add('is-syncing');
+    } else if (state === 'synced') {
+      $el.textContent = '☁ Synced';
+    } else if (state === 'error') {
+      $el.textContent = '⚠ Sync error';
+      $el.classList.add('is-error');
+    } else {
+      $el.textContent = '';
+    }
+  }
+
+  function collectLocalSyncData() {
+    return {
+      progress: localStorage.getItem(STORAGE_KEY) || '{}',
+      scores: localStorage.getItem(SCORE_STORAGE_KEY) || '{}',
+      compExams: localStorage.getItem(COMP_STORAGE_KEY) || '{}',
+      planDate: localStorage.getItem(PLAN_DATE_KEY) || ''
+    };
+  }
+
+  // Called by every local save (see queueCloudPush hooks added to
+  // saveProgress / saveScores / saveCompExams / plan-date save below).
+  function queueCloudPush() {
+    if (!cloudSyncEnabled) return;
+    clearTimeout(pushDebounceTimer);
+    pushDebounceTimer = setTimeout(pushCloudData, 800);
+  }
+
+  function pushCloudData() {
+    const user = auth.currentUser;
+    if (!user) return;
+    setSyncStatus('syncing');
+    awaitingOwnPushAck = true;
+    db.collection('users').doc(user.uid).set({
+      sync: collectLocalSyncData(),
+      syncUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(() => {
+      setSyncStatus('synced');
+    }).catch(err => {
+      awaitingOwnPushAck = false;
+      setSyncStatus('error');
+      console.error('Cloud sync push failed:', err);
+    });
+  }
+
+  // Overwrites local data with what came down from Firestore, then reloads
+  // so every in-memory variable and rendered view picks it up cleanly.
+  function applyCloudData(sync) {
+    if (sync.progress !== undefined) localStorage.setItem(STORAGE_KEY, sync.progress);
+    if (sync.scores !== undefined) localStorage.setItem(SCORE_STORAGE_KEY, sync.scores);
+    if (sync.compExams !== undefined) localStorage.setItem(COMP_STORAGE_KEY, sync.compExams);
+    if (sync.planDate !== undefined) localStorage.setItem(PLAN_DATE_KEY, sync.planDate);
+    showToastSafe('Synced progress from your other device');
+    setTimeout(() => location.reload(), 400);
+  }
+
+  // Called from the user-doc snapshot listener once the account is approved.
+  function handleCloudSync(userDoc, hasPendingWrites) {
+    cloudSyncEnabled = true;
+    const cloud = userDoc.sync;
+    const cloudTs = userDoc.syncUpdatedAt ? userDoc.syncUpdatedAt.toMillis() : 0;
+
+    if (!cloud) {
+      // First time this account has ever synced — seed the cloud with
+      // whatever is on this device right now.
+      setSyncStatus('idle');
+      pushCloudData();
+      return;
+    }
+
+    if (hasPendingWrites) {
+      // This snapshot is our own optimistic local write bouncing back
+      // before the server has confirmed it — local already matches it.
+      return;
+    }
+
+    if (awaitingOwnPushAck) {
+      // Server just confirmed a push we made from this device.
+      awaitingOwnPushAck = false;
+      localStorage.setItem('nle_last_cloud_ts', String(cloudTs));
+      setSyncStatus('synced');
+      return;
+    }
+
+    const lastApplied = Number(localStorage.getItem('nle_last_cloud_ts') || 0);
+    if (cloudTs > lastApplied) {
+      // Newer data arrived from another device — pull it down.
+      localStorage.setItem('nle_last_cloud_ts', String(cloudTs));
+      applyCloudData(cloud);
+    } else {
+      setSyncStatus('synced');
+    }
   }
 
   function gateCopyUid() {
@@ -1261,6 +1394,7 @@
           $topbarEmail.textContent = user.email;
           $topbarEmail.title = user.email;
         }
+        handleCloudSync(data, snap.metadata.hasPendingWrites);
       } else {
         document.getElementById('gate-pending-email').textContent = user.email;
         document.getElementById('gate-uid').textContent = user.uid;
@@ -1288,6 +1422,7 @@
     <div class="topbar-sub">made by her love: Gab</div>
   </div>
   <div class="topbar-right">
+    <span class="topbar-sync" id="topbar-sync" title="Cloud sync status"></span>
     <span class="topbar-email" id="topbar-email" title=""></span>
     <button class="refresh-btn" onclick="refreshApp()" title="Check for updates" aria-label="Refresh">↻</button>
     <button class="reset-btn" onclick="exportProgress()" title="Save a backup file">Export</button>
@@ -2035,6 +2170,7 @@ function loadProgress() {
 
 function saveProgress(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  queueCloudPush();
 }
 
 let progress = loadProgress();
@@ -2046,6 +2182,7 @@ function loadScores() {
 }
 function saveScores(data) {
   localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(data));
+  queueCloudPush();
 }
 let scoreData = loadScores();
 
@@ -2061,6 +2198,7 @@ function loadCompExams() {
 }
 function saveCompExams(data) {
   localStorage.setItem(COMP_STORAGE_KEY, JSON.stringify(data));
+  queueCloudPush();
 }
 
 // ══════════════════════════════════════════════
@@ -2114,6 +2252,7 @@ function importProgress(event) {
       if (data[SCORE_STORAGE_KEY] !== undefined) localStorage.setItem(SCORE_STORAGE_KEY, data[SCORE_STORAGE_KEY]);
       if (data[COMP_STORAGE_KEY] !== undefined) localStorage.setItem(COMP_STORAGE_KEY, data[COMP_STORAGE_KEY]);
       if (data[PLAN_DATE_KEY] !== undefined) localStorage.setItem(PLAN_DATE_KEY, data[PLAN_DATE_KEY]);
+      queueCloudPush();
       showToastSafe('Backup restored! Reloading...');
       setTimeout(() => location.reload(), 800);
     } catch (e) {
@@ -2512,6 +2651,7 @@ const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 function clearStudyPlan() {
   try { localStorage.removeItem(PLAN_DATE_KEY); } catch(e) {}
+  queueCloudPush();
   document.getElementById('plan-exam-date').value = '';
   document.getElementById('plan-results').classList.remove('show');
   document.getElementById('plan-results').innerHTML = '';
@@ -2531,6 +2671,7 @@ function generateStudyPlan() {
   const val = document.getElementById('plan-exam-date').value;
   if (!val) { showToast('Pick your exam date first'); return; }
   try { localStorage.setItem(PLAN_DATE_KEY, val); } catch(e) {}
+  queueCloudPush();
   renderStudyPlan(val);
 }
 

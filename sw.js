@@ -1,5 +1,5 @@
 // Bump this on every deploy so clients pick up the new version automatically.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = `nle-tracker-${VERSION}`;
 
 const ASSETS = [
