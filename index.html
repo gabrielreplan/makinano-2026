@@ -1218,21 +1218,23 @@
     }
     .ai-tabs {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       padding: 10px 16px;
       border-bottom: 1px solid var(--border);
     }
     .ai-tab {
-      flex: 1;
-      padding: 9px;
+      flex: 1 1 40%;
+      padding: 9px 6px;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--navy3);
       color: var(--muted);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-family: 'Inter', sans-serif;
       font-weight: 500;
       cursor: pointer;
+      white-space: nowrap;
     }
     .ai-tab.active { background: var(--teal); color: var(--navy); border-color: var(--teal); font-weight: 700; }
     .ai-context-row {
@@ -1858,8 +1860,9 @@
       <button class="ai-tab active" id="ai-tab-chat" onclick="setAIMode('chat')">💬 Chat</button>
       <button class="ai-tab" id="ai-tab-explain" onclick="setAIMode('explain')">📖 Explain</button>
       <button class="ai-tab" id="ai-tab-quiz" onclick="setAIMode('quiz')">🧠 Quiz</button>
+      <button class="ai-tab" id="ai-tab-advice" onclick="setAIMode('advice')">📊 Advice</button>
     </div>
-    <div class="ai-context-row">
+    <div class="ai-context-row" id="ai-context-row">
       <select class="ai-select" id="ai-subject-select" onchange="onAISubjectChange()">
         <option value="">General (no subject)</option>
       </select>
@@ -2737,6 +2740,47 @@ function compAverage(subjectId) {
   return scores.reduce((a, b) => a + Number(b), 0) / scores.length;
 }
 
+// Builds a compact snapshot of the user's real progress/scores so the AI
+// assistant can reference actual numbers instead of guessing.
+function buildProgressSummary() {
+  const overall = countAll();
+
+  const subjects = NP_DATA.map(np => {
+    const c = countForNP(np.id);
+    return {
+      name: `${np.name} – ${np.desc}`,
+      topicsDone: c.done,
+      topicsTotal: c.total,
+      percent: c.total ? Math.round((c.done / c.total) * 100) : 0,
+    };
+  });
+
+  const makinanoScores = MAKINANO_BANKS.map(bank => {
+    const score = getMakinano(bank.id);
+    if (score === null || score === undefined || score === '') return null;
+    return {
+      bank: bank.name,
+      score: Number(score),
+      items: bank.items,
+      percent: Math.round((Number(score) / bank.items) * 100),
+    };
+  }).filter(Boolean);
+
+  const compExamAverages = COMP_EXAM_SUBJECTS.map(subj => ({
+    subject: subj.name,
+    average: Math.round(compAverage(subj.id) * 10) / 10,
+  }));
+
+  return {
+    overallPercent: overall.total ? Math.round((overall.done / overall.total) * 100) : 0,
+    overallTopicsDone: overall.done,
+    overallTopicsTotal: overall.total,
+    subjects,
+    makinanoScores,
+    compExamAverages,
+  };
+}
+
 function renderCompExams() {
   const wrap = document.getElementById('comp-exam-table');
   const dateHeaders = COMP_EXAM_DATES.map(d => `<div class="comp-cell comp-head">${d}</div>`).join('');
@@ -3336,23 +3380,34 @@ function setAIMode(mode) {
   document.getElementById('ai-tab-chat').classList.toggle('active', mode === 'chat');
   document.getElementById('ai-tab-explain').classList.toggle('active', mode === 'explain');
   document.getElementById('ai-tab-quiz').classList.toggle('active', mode === 'quiz');
+  document.getElementById('ai-tab-advice').classList.toggle('active', mode === 'advice');
 
   const genBtn = document.getElementById('ai-generate-btn');
   const inputRow = document.getElementById('ai-input-row');
+  const contextRow = document.getElementById('ai-context-row');
 
   if (mode === 'chat') {
     genBtn.style.display = 'none';
     inputRow.style.display = 'flex';
+    contextRow.style.display = 'flex';
   } else if (mode === 'explain') {
     genBtn.style.display = 'block';
     genBtn.textContent = 'Explain this topic';
     genBtn.onclick = explainTopic;
     inputRow.style.display = 'none';
+    contextRow.style.display = 'flex';
   } else if (mode === 'quiz') {
     genBtn.style.display = 'block';
     genBtn.textContent = 'Generate Question';
     genBtn.onclick = generateQuizQuestion;
     inputRow.style.display = 'none';
+    contextRow.style.display = 'flex';
+  } else if (mode === 'advice') {
+    genBtn.style.display = 'block';
+    genBtn.textContent = 'Get Personalized Advice';
+    genBtn.onclick = generateAdvice;
+    inputRow.style.display = 'none';
+    contextRow.style.display = 'none';
   }
 }
 setAIMode('chat');
@@ -3384,6 +3439,7 @@ async function callAIWorker(mode, extra) {
         mode,
         subject: subjectObj ? `${subjectObj.name} – ${subjectObj.desc}` : undefined,
         topic: topicText || undefined,
+        progress: buildProgressSummary(),
       },
       extra
     );
@@ -3487,6 +3543,12 @@ function renderQuizMessage(parsed) {
 
   m.appendChild(div);
   m.scrollTop = m.scrollHeight;
+}
+
+async function generateAdvice() {
+  addAIMessage('user', 'Give me personalized advice based on my progress and scores');
+  const text = await callAIWorker('advice', {});
+  if (text) addAIMessage('assistant', text);
 }
 
 async function generateQuizQuestion() {
