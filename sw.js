@@ -1,5 +1,9 @@
+// MAKINANO, RN 2026 — NLE Tracker Service Worker
+// Copyright (c) 2026 John Gabriel Replan. All Rights Reserved.
+// Proprietary software. See LICENSE.md.
+
 // Bump this on every deploy so clients pick up the new version automatically.
-const VERSION = 'v8';
+const VERSION = 'v7';
 const CACHE = `nle-tracker-${VERSION}`;
 
 const ASSETS = [

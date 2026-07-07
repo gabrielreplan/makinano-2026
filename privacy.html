@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+  MAKINANO, RN 2026 — NLE Tracker
+  Copyright (c) 2026 John Gabriel Replan. All Rights Reserved.
+  Proprietary software. See LICENSE.md.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy Policy — MAKINANO, RN 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #0d1b2a; --navy2: #132238; --navy3: #1c3150;
+    --teal: #00c9a7; --sky: #38bdf8; --white: #f0f6ff;
+    --muted: #8ba3bc; --card: #111e2f; --border: #1e3249;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--navy); color: var(--white);
+    font-family: 'Inter', sans-serif;
+    margin: 0; padding: 24px 16px 60px;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  .back { color: var(--teal); text-decoration: none; font-size: 0.85rem; }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem; margin: 18px 0 4px;
+    color: var(--white);
+  }
+  .updated { color: var(--muted); font-size: 0.8rem; margin-bottom: 28px; }
+  h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem; color: var(--teal);
+    margin: 32px 0 10px;
+  }
+  p, li { color: #cfe1f0; font-size: 0.92rem; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px; margin: 14px 0;
+  }
+  a { color: var(--sky); }
+  .contact {
+    background: var(--navy2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px; margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="./index.html">← Back to app</a>
+  <h1>Privacy Policy</h1>
+  <div class="updated">MAKINANO, RN 2026 (NLE Tracker) · Last updated: July 7, 2026</div>
+
+  <p>This Privacy Policy explains what information MAKINANO, RN 2026 ("the app", "we", "us") collects when you use it, how it's used, and who it's shared with. By signing in and using the app, you agree to the practices described here.</p>
+
+  <h2>1. Information we collect</h2>
+  <div class="card">
+    <ul>
+      <li><b>Google account info:</b> your name, email address, and a unique account ID, provided by Google Sign-In when you log in.</li>
+      <li><b>Study progress data:</b> which topics you've checked off, your practice test scores, comprehensive exam averages, and your planned exam date.</li>
+      <li><b>Payment-related info you send us directly:</b> if you message us to request approval, we may keep a record of your name, email, User ID, and payment screenshot/confirmation for our own bookkeeping. Payments themselves are made directly to us via GCash/bank transfer — we don't process or store your card or bank credentials, since payment happens outside the app.</li>
+      <li><b>AI Study Assistant usage:</b> if you use the AI Study Assistant add-on, the questions/messages you send it and light context about your progress (e.g. subject, topic, completion %) are sent to our AI proxy to generate a response. We don't permanently store your AI chat history on our servers beyond what's needed to answer your request and enforce a daily usage limit.</li>
+    </ul>
+  </div>
+
+  <h2>2. How we use this information</h2>
+  <div class="card">
+    <ul>
+      <li>To let you sign in and identify your own account.</li>
+      <li>To determine whether you've been approved for the base tracker and/or the AI add-on.</li>
+      <li>To save and sync your study progress across your own devices.</li>
+      <li>To respond to your questions/support requests.</li>
+      <li>To generate AI tutoring responses (explanations, quiz questions, personalized advice) based on your prompts and progress data.</li>
+      <li>To enforce fair-use limits (e.g. a daily cap on AI requests) and prevent abuse.</li>
+    </ul>
+    <p>We do not sell your data, and we do not use it for advertising.</p>
+  </div>
+
+  <h2>3. Where your data is stored</h2>
+  <div class="card">
+    <ul>
+      <li><b>On your device:</b> your progress, scores, and exam date are saved locally in your browser (localStorage) so the app works offline.</li>
+      <li><b>In the cloud:</b> once approved, this same data is mirrored to your own private document in Google Firebase/Firestore, a cloud database — visible only to your account and to us as the app operator.</li>
+      <li><b>Third-party processors:</b> we use Google Firebase (Authentication + Firestore) to manage sign-in and store your data, Cloudflare Workers to relay AI requests, and Google's Gemini API to generate AI responses. These providers process data on our behalf under their own security and privacy terms.</li>
+    </ul>
+  </div>
+
+  <h2>4. Data retention & deletion</h2>
+  <div class="card">
+    <p>We keep your account record for as long as you use the app. If you'd like your data deleted — your Firestore account record, progress, and scores — message us using the contact details in the app and we'll remove it. Note that data cached locally on your own device (localStorage) can also be cleared by you at any time by clearing your browser's site data, or using the in-app "Reset" option.</p>
+  </div>
+
+  <h2>5. Children's privacy</h2>
+  <div class="card">
+    <p>This app is intended for nursing licensure exam reviewees, generally adults preparing for a professional board exam. It is not directed at children under 13, and we don't knowingly collect data from children under that age.</p>
+  </div>
+
+  <h2>6. Your choices</h2>
+  <div class="card">
+    <ul>
+      <li>You can sign out at any time, which stops cloud sync until you sign back in.</li>
+      <li>You can request a copy or deletion of your data by contacting us.</li>
+      <li>You can revoke Google's access to your account at any time via your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account permissions page</a>.</li>
+    </ul>
+  </div>
+
+  <h2>7. Changes to this policy</h2>
+  <div class="card">
+    <p>We may update this policy as the app changes. Continued use of the app after an update means you accept the revised policy. Material changes will be reflected by updating the "Last updated" date above.</p>
+  </div>
+
+  <div class="contact">
+    <b>Questions about your data?</b><br>
+    Contact <b>John Gabriel Replan</b> via Messenger (link available in the app) with your account email or User ID.
+  </div>
+</div>
+</body>
+</html>
