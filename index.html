@@ -1156,6 +1156,196 @@
       .gate-instructions { font-size: 0.7rem; padding: 10px 12px; }
       .gate-email { font-size: 0.7rem; padding: 6px 10px; }
     }
+
+    /* ── AI ASSISTANT ── */
+    .ai-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 86px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      border: none;
+      box-shadow: 0 6px 18px rgba(0,201,167,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      z-index: 150;
+      color: var(--navy);
+    }
+    .ai-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 250;
+      align-items: flex-end;
+    }
+    .ai-overlay.show { display: flex; }
+    .ai-panel {
+      background: var(--card);
+      border-radius: var(--radius) var(--radius) 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      width: 100%;
+      height: 88vh;
+      height: 88dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    .ai-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ai-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+    }
+    .ai-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+    .ai-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ai-tab {
+      flex: 1;
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--navy3);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .ai-tab.active { background: var(--teal); color: var(--navy); border-color: var(--teal); font-weight: 700; }
+    .ai-context-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+    }
+    .ai-select {
+      flex: 1;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.75rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .ai-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ai-msg {
+      max-width: 88%;
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-size: 0.83rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .ai-msg.user {
+      align-self: flex-end;
+      background: var(--teal);
+      color: var(--navy);
+      font-weight: 500;
+      border-bottom-right-radius: 4px;
+    }
+    .ai-msg.assistant {
+      align-self: flex-start;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+    .ai-msg.error {
+      align-self: center;
+      background: rgba(251,113,133,0.12);
+      border: 1px solid var(--rose);
+      color: var(--rose);
+      font-size: 0.78rem;
+    }
+    .ai-msg.loading { align-self: flex-start; color: var(--muted); font-style: italic; }
+    .ai-quiz-question { font-weight: 600; margin-bottom: 10px; }
+    .ai-quiz-opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 9px 12px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--navy2);
+      color: var(--white);
+      font-size: 0.8rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+    }
+    .ai-quiz-opt.correct { background: rgba(0,201,167,0.18); border-color: var(--teal); }
+    .ai-quiz-opt.incorrect { background: rgba(251,113,133,0.15); border-color: var(--rose); }
+    .ai-quiz-opt[disabled] { cursor: default; }
+    .ai-quiz-rationale {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .ai-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+      border-top: 1px solid var(--border);
+    }
+    .ai-input-row input {
+      flex: 1;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      color: var(--white);
+      border-radius: 20px;
+      padding: 11px 16px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .ai-send-btn, .ai-generate-btn {
+      background: var(--teal);
+      color: var(--navy);
+      border: none;
+      border-radius: 20px;
+      padding: 0 18px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+    }
+    .ai-generate-btn { width: 100%; margin: 4px 16px 12px; padding: 12px; border-radius: 12px; }
+    .quiz-inline-btn {
+      background: linear-gradient(135deg, var(--teal), var(--sky));
+      color: var(--navy);
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -1654,6 +1844,37 @@
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- AI Study Assistant -->
+<button class="ai-fab" id="ai-fab" onclick="openAIChat()" aria-label="AI Study Assistant">🤖</button>
+
+<div class="ai-overlay" id="ai-overlay">
+  <div class="ai-panel">
+    <div class="ai-header">
+      <h3>🤖 AI Study Buddy</h3>
+      <button class="ai-close" onclick="closeAIChat()">✕</button>
+    </div>
+    <div class="ai-tabs">
+      <button class="ai-tab active" id="ai-tab-chat" onclick="setAIMode('chat')">💬 Chat</button>
+      <button class="ai-tab" id="ai-tab-explain" onclick="setAIMode('explain')">📖 Explain</button>
+      <button class="ai-tab" id="ai-tab-quiz" onclick="setAIMode('quiz')">🧠 Quiz</button>
+    </div>
+    <div class="ai-context-row">
+      <select class="ai-select" id="ai-subject-select" onchange="onAISubjectChange()">
+        <option value="">General (no subject)</option>
+      </select>
+      <select class="ai-select" id="ai-topic-select">
+        <option value="">Any topic</option>
+      </select>
+    </div>
+    <div class="ai-messages" id="ai-messages"></div>
+    <button class="ai-generate-btn" id="ai-generate-btn" style="display:none"></button>
+    <div class="ai-input-row" id="ai-input-row">
+      <input type="text" id="ai-input" placeholder="Ask about NP I–V topics…" onkeydown="if(event.key==='Enter')sendAIChat()" />
+      <button class="ai-send-btn" onclick="sendAIChat()">Send</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- /#app-shell -->
 
@@ -2403,6 +2624,7 @@ function renderNPCards() {
         <div class="topics-actions">
           <button class="topics-action-btn" onclick="event.stopPropagation();checkAll('${np.id}')">✓ Check All</button>
           <button class="topics-action-btn" onclick="event.stopPropagation();uncheckAll('${np.id}')">✕ Uncheck All</button>
+          <button class="topics-action-btn quiz-inline-btn" onclick="event.stopPropagation();openQuizForSubject('${np.id}')">🧠 Quiz me</button>
         </div>
         <div class="topics-list" id="topics-${np.id}">
           ${renderTopicsHTML(np)}
@@ -3050,6 +3272,230 @@ function showUpdateBanner(reg) {
     banner.style.display = 'none';
     if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
   };
+}
+
+// ══════════════════════════════════════════════
+//  AI STUDY ASSISTANT
+// ══════════════════════════════════════════════
+const AI_WORKER_URL = 'https://nle-tracker-ai.gaboreplan4.workers.dev/';
+let aiMode = 'chat';
+let aiChatHistory = [];
+let aiSubjectsPopulated = false;
+
+function populateAISubjects() {
+  if (aiSubjectsPopulated) return;
+  const sel = document.getElementById('ai-subject-select');
+  NP_DATA.forEach(np => {
+    const opt = document.createElement('option');
+    opt.value = np.id;
+    opt.textContent = `${np.name} – ${np.desc}`;
+    sel.appendChild(opt);
+  });
+  aiSubjectsPopulated = true;
+}
+
+function onAISubjectChange() {
+  const npId = document.getElementById('ai-subject-select').value;
+  const topicSel = document.getElementById('ai-topic-select');
+  topicSel.innerHTML = '<option value="">Any topic</option>';
+  const np = NP_DATA.find(n => n.id === npId);
+  if (!np) return;
+  np.groups.forEach(g => {
+    g.topics.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.text;
+      opt.textContent = t.text;
+      topicSel.appendChild(opt);
+    });
+  });
+}
+
+function openAIChat() {
+  populateAISubjects();
+  document.getElementById('ai-overlay').classList.add('show');
+}
+
+function closeAIChat() {
+  document.getElementById('ai-overlay').classList.remove('show');
+}
+
+document.getElementById('ai-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAIChat();
+});
+
+function openQuizForSubject(npId) {
+  populateAISubjects();
+  document.getElementById('ai-overlay').classList.add('show');
+  document.getElementById('ai-subject-select').value = npId;
+  onAISubjectChange();
+  setAIMode('quiz');
+}
+
+function setAIMode(mode) {
+  aiMode = mode;
+  document.getElementById('ai-tab-chat').classList.toggle('active', mode === 'chat');
+  document.getElementById('ai-tab-explain').classList.toggle('active', mode === 'explain');
+  document.getElementById('ai-tab-quiz').classList.toggle('active', mode === 'quiz');
+
+  const genBtn = document.getElementById('ai-generate-btn');
+  const inputRow = document.getElementById('ai-input-row');
+
+  if (mode === 'chat') {
+    genBtn.style.display = 'none';
+    inputRow.style.display = 'flex';
+  } else if (mode === 'explain') {
+    genBtn.style.display = 'block';
+    genBtn.textContent = 'Explain this topic';
+    genBtn.onclick = explainTopic;
+    inputRow.style.display = 'none';
+  } else if (mode === 'quiz') {
+    genBtn.style.display = 'block';
+    genBtn.textContent = 'Generate Question';
+    genBtn.onclick = generateQuizQuestion;
+    inputRow.style.display = 'none';
+  }
+}
+setAIMode('chat');
+
+function addAIMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = `ai-msg ${role}`;
+  div.textContent = text;
+  const m = document.getElementById('ai-messages');
+  m.appendChild(div);
+  m.scrollTop = m.scrollHeight;
+  return div;
+}
+
+async function callAIWorker(mode, extra) {
+  if (!auth.currentUser) {
+    addAIMessage('error', 'Please sign in first.');
+    return null;
+  }
+  const loadingEl = addAIMessage('loading', 'Thinking…');
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const subjectId = document.getElementById('ai-subject-select').value;
+    const topicText = document.getElementById('ai-topic-select').value;
+    const subjectObj = NP_DATA.find(np => np.id === subjectId);
+
+    const body = Object.assign(
+      {
+        mode,
+        subject: subjectObj ? `${subjectObj.name} – ${subjectObj.desc}` : undefined,
+        topic: topicText || undefined,
+      },
+      extra
+    );
+
+    const res = await fetch(AI_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    loadingEl.remove();
+
+    if (!res.ok) {
+      addAIMessage('error', data.error || 'Something went wrong. Please try again.');
+      return null;
+    }
+    return data.text;
+  } catch (err) {
+    loadingEl.remove();
+    addAIMessage('error', 'Network error — please check your connection and try again.');
+    return null;
+  }
+}
+
+async function sendAIChat() {
+  const input = document.getElementById('ai-input');
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = '';
+  addAIMessage('user', message);
+  aiChatHistory.push({ role: 'user', text: message });
+
+  const text = await callAIWorker('chat', { message, history: aiChatHistory.slice(-10) });
+  if (text) {
+    addAIMessage('assistant', text);
+    aiChatHistory.push({ role: 'assistant', text });
+  }
+}
+
+async function explainTopic() {
+  const topicText = document.getElementById('ai-topic-select').value;
+  const subjectSel = document.getElementById('ai-subject-select');
+  const label = topicText || (subjectSel.value ? subjectSel.options[subjectSel.selectedIndex].text : 'this subject');
+  addAIMessage('user', `Explain: ${label}`);
+
+  const text = await callAIWorker('explain', {});
+  if (text) addAIMessage('assistant', text);
+}
+
+function parseQuizText(text) {
+  const qMatch = text.match(/QUESTION:\s*([^\n]+)/i);
+  const aMatch = text.match(/A\)\s*([^\n]+)/i);
+  const bMatch = text.match(/B\)\s*([^\n]+)/i);
+  const cMatch = text.match(/C\)\s*([^\n]+)/i);
+  const dMatch = text.match(/D\)\s*([^\n]+)/i);
+  const ansMatch = text.match(/ANSWER:\s*([A-D])/i);
+  const ratMatch = text.match(/RATIONALE:\s*([\s\S]*)/i);
+
+  if (!qMatch || !aMatch || !bMatch || !cMatch || !dMatch || !ansMatch) return null;
+
+  return {
+    question: qMatch[1].trim(),
+    options: { A: aMatch[1].trim(), B: bMatch[1].trim(), C: cMatch[1].trim(), D: dMatch[1].trim() },
+    answer: ansMatch[1].toUpperCase(),
+    rationale: ratMatch ? ratMatch[1].trim() : '',
+  };
+}
+
+function renderQuizMessage(parsed) {
+  const m = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg assistant';
+
+  const qDiv = document.createElement('div');
+  qDiv.className = 'ai-quiz-question';
+  qDiv.textContent = parsed.question;
+  div.appendChild(qDiv);
+
+  const optButtons = {};
+  Object.entries(parsed.options).forEach(([letter, optText]) => {
+    const btn = document.createElement('button');
+    btn.className = 'ai-quiz-opt';
+    btn.textContent = `${letter}) ${optText}`;
+    optButtons[letter] = btn;
+    btn.onclick = () => {
+      Object.values(optButtons).forEach(b => (b.disabled = true));
+      if (letter === parsed.answer) {
+        btn.classList.add('correct');
+      } else {
+        btn.classList.add('incorrect');
+        if (optButtons[parsed.answer]) optButtons[parsed.answer].classList.add('correct');
+      }
+      const rat = document.createElement('div');
+      rat.className = 'ai-quiz-rationale';
+      rat.textContent = parsed.rationale;
+      div.appendChild(rat);
+      m.scrollTop = m.scrollHeight;
+    };
+    div.appendChild(btn);
+  });
+
+  m.appendChild(div);
+  m.scrollTop = m.scrollHeight;
+}
+
+async function generateQuizQuestion() {
+  addAIMessage('user', 'Generate a quiz question');
+  const text = await callAIWorker('quiz', {});
+  if (!text) return;
+  const parsed = parseQuizText(text);
+  if (parsed) renderQuizMessage(parsed);
+  else addAIMessage('assistant', text);
 }
 </script>
 
