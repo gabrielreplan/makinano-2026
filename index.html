@@ -1217,8 +1217,16 @@
 <script>
   // ── 1. PASTE YOUR FIREBASE CONFIG HERE ──
   // Get this from: Firebase Console → Project settings → General → Your apps → SDK setup
+  //
+  // NOTE: This value is *meant* to be public in client-side Firebase apps —
+  // it is not a secret like a server API key. The real security boundary is:
+  //   (1) Firestore security rules (see README) and
+  //   (2) restricting this key to your domain in Google Cloud Console →
+  //       APIs & Services → Credentials → your key → Application restrictions
+  //       → Websites → add your github.io URL.
+  // Do that once, then this being visible in the repo is not a risk.
   const firebaseConfig = {
-    apiKey: "AIzaSyBOmMO522J5hX-hfMqxUjNZwQT8j3FpkTo",
+    apiKey: "AIzaSyAzebB4Q2hUaYEF4T_4OKwaH7s1K-5d-Tw",
     authDomain: "nletracker.firebaseapp.com",
     projectId: "nletracker",
     storageBucket: "nletracker.firebasestorage.app",

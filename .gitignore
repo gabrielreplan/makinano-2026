@@ -1,0 +1,18 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+
+# If you ever keep a local scratch copy of index.html with your real
+# Firebase config filled in under a different name, ignore that instead
+# of the real index.html (GitHub Pages needs index.html itself public —
+# see README's "Setting up Sign-In" section for why the config value
+# itself is safe to publish once restricted in Google Cloud Console).
+index.local.html
+*.local.js
+.env
+.env.local
