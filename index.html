@@ -1436,6 +1436,9 @@
   let awaitingOwnPushAck = false;
   let pushDebounceTimer = null;
 
+  // ── AI add-on approval state (separate paywall from base app access) ──
+  let aiApproved = false;
+
   const $loading   = document.getElementById('gate-loading');
   const $signedout = document.getElementById('gate-signedout');
   const $pending   = document.getElementById('gate-pending');
@@ -1615,6 +1618,7 @@
             email: user.email,
             name: user.displayName || '',
             approved: false,
+            aiApproved: false,
             requestedAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         } catch (e) {
@@ -1624,6 +1628,19 @@
       }
 
       const data = snap.data();
+
+      // Track the separate AI add-on approval, and auto-unlock the AI
+      // paywall in real time (mirrors how base access unlocks above) if
+      // the person is currently looking at it when their payment clears.
+      const wasAIApproved = aiApproved;
+      aiApproved = data.aiApproved === true;
+      const $aiPaywall = document.getElementById('ai-paywall-overlay');
+      if (aiApproved && !wasAIApproved && $aiPaywall && $aiPaywall.classList.contains('show')) {
+        closeAIPaywall();
+        showToastSafe('AI Study Assistant unlocked! 🎉');
+        openAIChat();
+      }
+
       if (data.approved === true) {
         showGateScreen('approved');
         const $topbarEmail = document.getElementById('topbar-email');
@@ -1875,6 +1892,38 @@
     <div class="ai-input-row" id="ai-input-row">
       <input type="text" id="ai-input" placeholder="Ask about NP I–V topics…" onkeydown="if(event.key==='Enter')sendAIChat()" />
       <button class="ai-send-btn" onclick="sendAIChat()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Study Assistant — separate paywall (add-on, gated independently from base app access) -->
+<div class="ai-overlay" id="ai-paywall-overlay">
+  <div class="ai-panel" style="height:auto; max-height:92dvh; overflow-y:auto;">
+    <div class="ai-header">
+      <h3>🤖 AI Study Assistant</h3>
+      <button class="ai-close" onclick="closeAIPaywall()">✕</button>
+    </div>
+    <div style="padding:18px 20px 24px;">
+      <div class="gate-sub" style="margin-bottom:14px;">
+        Chat, Explain, Quiz Generator, and Personalized Advice are a separate add-on from your tracker access — here's how to unlock it.
+      </div>
+      <div class="gate-card">
+        <div class="gate-price">AI Study Assistant(can give advice,quizes and sample questions) add-on: <b>₱ 150</b> · one-time, lifetime</div>
+        <div class="gate-email" id="ai-paywall-email"></div>
+        <div class="gate-instructions">
+          1. Send your payment of <b>₱ 150</b> to:<br>
+          &nbsp;&nbsp;<b>John Gabriel Replan</b> — 09914642530<br><br>
+          2. Send a screenshot of your payment + the email above to:<br>
+          &nbsp;&nbsp;<b>John Gabriel Replan</b><br><br>
+          3. Once confirmed, this unlocks automatically — no need to refresh, it updates in real time.
+        </div>
+        <div class="gate-uid-box">
+          <code id="ai-paywall-uid"></code>
+          <button class="gate-copy-btn" onclick="aiPaywallCopyUid()">Copy ID</button>
+        </div>
+        <a class="gate-msg-btn" id="ai-paywall-msg-link" href="#" target="_blank" rel="noopener">💬 Open Messenger</a>
+        <button class="gate-msg-copy-btn" onclick="aiPaywallCopyMsg()">Copy my message first (Messenger can't auto-fill it)</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3355,6 +3404,7 @@ function onAISubjectChange() {
 }
 
 function openAIChat() {
+  if (!aiApproved) { openAIPaywall(); return; }
   populateAISubjects();
   document.getElementById('ai-overlay').classList.add('show');
 }
@@ -3368,11 +3418,41 @@ document.getElementById('ai-overlay').addEventListener('click', function(e) {
 });
 
 function openQuizForSubject(npId) {
+  if (!aiApproved) { openAIPaywall(); return; }
   populateAISubjects();
   document.getElementById('ai-overlay').classList.add('show');
   document.getElementById('ai-subject-select').value = npId;
   onAISubjectChange();
   setAIMode('quiz');
+}
+
+// ── AI add-on paywall (separate from base app access) ──
+function openAIPaywall() {
+  const user = auth.currentUser;
+  if (!user) { showToastSafe('Please sign in first.'); return; }
+  document.getElementById('ai-paywall-email').textContent = user.email;
+  document.getElementById('ai-paywall-uid').textContent = user.uid;
+  const msgText = `Hi! I'd like to upgrade to the AI Study Assistant add-on.\nEmail: ${user.email}\nUser ID: ${user.uid}`;
+  window.__aiPaywallMsg = msgText;
+  document.getElementById('ai-paywall-msg-link').href = 'https://m.me/john.gabriel.replan';
+  document.getElementById('ai-paywall-overlay').classList.add('show');
+}
+
+function closeAIPaywall() {
+  document.getElementById('ai-paywall-overlay').classList.remove('show');
+}
+
+document.getElementById('ai-paywall-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAIPaywall();
+});
+
+function aiPaywallCopyUid() {
+  const uid = document.getElementById('ai-paywall-uid').textContent;
+  navigator.clipboard.writeText(uid).then(() => showToastSafe('Copied!'));
+}
+function aiPaywallCopyMsg() {
+  const msg = window.__aiPaywallMsg || '';
+  navigator.clipboard.writeText(msg).then(() => showToastSafe('Message copied — paste it in Messenger!'));
 }
 
 function setAIMode(mode) {

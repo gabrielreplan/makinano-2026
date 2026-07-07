@@ -12,6 +12,7 @@ A Progressive Web App (PWA) to track your Philippine Nursing Licensure Exam 2026
 - 🔄 Auto-updates in the background — when a new version is ready you'll see an "Update available" banner; tapping it refreshes the app without touching your saved data
 - 📱 Installable on iPad, iPhone, Android (works offline!)
 - 🔐 **Google Sign-In + paywall** — visitors sign in with Google, then see a "payment pending" screen until you manually approve them. Once approved, they're in for good (no re-approval needed, unless you revoke it).
+- 🤖💳 **AI Study Assistant is a separate paid add-on** — the base tracker (progress, scores, comp-exam tracker, cloud sync) is gated by one payment/approval; the AI Chat/Explain/Quiz/Advice assistant is gated by a *second, independent* payment/approval. Someone can buy just the tracker, or the tracker + AI — you set both prices and approve each separately.
 - ☁️ **Automatic cloud sync** — once approved, progress/scores/comp-exam data/exam date are mirrored to that person's own Firestore document. Sign in with the same Google account on another phone/tablet/browser and it pulls the same data down automatically — no manual export/import needed. A small "☁ Synced" indicator in the top bar shows sync status.
 
 ---
@@ -39,12 +40,13 @@ This uses **Firebase**, Google's free backend service (Spark/free plan — no co
          allow read: if request.auth != null && request.auth.uid == userId;
          allow create: if request.auth != null && request.auth.uid == userId;
          allow update: if request.auth != null && request.auth.uid == userId
-                       && request.resource.data.approved == resource.data.approved;
+                       && request.resource.data.approved == resource.data.approved
+                       && request.resource.data.aiApproved == resource.data.aiApproved;
        }
      }
    }
    ```
-   This means: a signed-in user can only see/create *their own* record, and can update their own `sync` data (that's what powers cloud sync, below) — but `allow update` requires the `approved` field to stay exactly as it already was, so a user can never flip their own `approved` from `false` to `true`. Only you can do that, from the console.
+   This means: a signed-in user can only see/create *their own* record, and can update their own `sync` data (that's what powers cloud sync, below) — but `allow update` requires **both** the `approved` field *and* the `aiApproved` field to stay exactly as they already were, so a user can never flip either of them from `false` to `true` themselves. Only you can do that, from the console — and you do it independently for each: someone can be `approved: true` (tracker) but still `aiApproved: false` (no AI yet) until they pay for the add-on too.
 
 ### Step D: Get your config keys and paste them into `index.html`
 1. Left sidebar: click the **⚙️ gear → Project settings**
@@ -66,7 +68,12 @@ This uses **Firebase**, Google's free backend service (Spark/free plan — no co
 2. Add `YOUR-USERNAME.github.io` (the domain your site will live on — see hosting steps below). Without this, Google Sign-In will fail with an "unauthorized domain" error.
 
 ### Step F: Set your price and payment details
-Still in `index.html`, search for `[set your price]` and `[GCash / bank name]` (they appear twice each) and fill in your real price and payment info (GCash number, bank details, etc.), and `[your Messenger/FB name or contact]` with how buyers should reach you.
+Still in `index.html`, there are now **two separate paywalls**:
+
+1. **Base tracker paywall** (sign-in + pending screens) — payment name/number/Messenger are already filled in with example values; search for `₱ 200` to change the price, and update the name/number/Messenger link near `gate-instructions` / `gate-msg-link` if they're not yours.
+2. **AI Study Assistant add-on paywall** (shown when someone taps the 🤖 button without having paid for AI) — search for `[set your AI price]` (appears twice) and set your AI price, and `[GCash / bank name]` / `[your Messenger/FB name or contact]` (inside the `id="ai-paywall-overlay"` block) to fill in your real payment details. It reuses the same Messenger link as the base paywall by default — change the `href` next to `id="ai-paywall-msg-link"` if you want a different contact for AI upgrade requests.
+
+Want the base tracker to be free and only charge for the AI add-on? Just change the `₱ 200` price text to "Free" (or remove the price line) and set `approved: true` automatically for everyone — the simplest way is to change the default in the `userRef.set({...})` call (search for `approved: false,`) to `approved: true,` so new sign-ins skip the base paywall entirely and land straight on the pending-AI screen only when they tap the AI button.
 
 ---
 
@@ -86,13 +93,25 @@ When they sign in with the *same Google account* on another device, the app comp
 
 ## ✅ Approving a buyer after payment
 
-1. Buyer opens your site → signs in with Google → sees a **"Almost there!"** pending screen with their email and a User ID, and instructions to pay you and message you.
-2. Once they pay and message you, go to **Firebase Console → Firestore Database → `users` collection**.
-3. Find the document matching their email (or the User ID they sent you).
-4. Click into it → edit the `approved` field → change it from `false` to `true` (boolean) → Save.
-5. Their app unlocks **automatically within seconds** — they don't need to refresh or reinstall anything.
+There are now **two independent fields** on each buyer's Firestore document — approve each one separately depending on what they paid for:
 
-To revoke someone's access later, just flip `approved` back to `false` the same way.
+| Field | Unlocks | Set to `true` when… |
+|---|---|---|
+| `approved` | The base tracker app (progress, scores, cloud sync) | They paid the base access fee |
+| `aiApproved` | The 🤖 AI Study Assistant (Chat/Explain/Quiz/Advice) | They paid the AI add-on fee |
+
+A buyer can have one, the other, both, or neither — whatever they've actually paid for.
+
+1. Buyer opens your site → signs in with Google → sees a **"Almost there!"** pending screen (for the base app) with their email and a User ID, and instructions to pay you and message you. If they instead (or additionally) tap the 🤖 button without having paid for AI, they see a similar **AI Study Assistant** pending screen with the same kind of instructions, specific to the AI add-on.
+2. Once they pay and message you (their message will say which one they're paying for), go to **Firebase Console → Firestore Database → `users` collection**.
+3. Find the document matching their email (or the User ID they sent you).
+4. Click into it → edit the relevant field(s):
+   - Base access: change `approved` from `false` to `true`.
+   - AI add-on: change `aiApproved` from `false` to `true`.
+   → Save.
+5. Their app unlocks **automatically within seconds** — they don't need to refresh or reinstall anything. This applies to both fields independently: approving `aiApproved` while they're mid-way through the AI paywall screen flips them straight into the AI chat.
+
+To revoke access later, just flip the relevant field back to `false` the same way — you can revoke AI access without touching their base tracker access, or vice versa.
 
 > 💡 Tip: You can add extra fields to their document too (e.g. `paidAmount`, `notes`) — Firestore doesn't mind extra fields, and they won't affect the app.
 
